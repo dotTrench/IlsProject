@@ -15,6 +15,33 @@ fields = [
         'converter': word_count_convert,
         'output': 'request_text_length'
     },
+    {
+        'input': 'request_title',
+        'converter': word_count_convert,
+        'output': 'request_title_length'
+    },
+    {
+        'input': 'requester_number_of_comments_at_request',
+        'output': 'requester_num_comments'
+    },
+    {
+        'input': 'requester_number_of_comments_in_raop_at_request',
+        'output': 'requester_num_comments_in_raop'
+    },
+    {
+        'input': 'requester_number_of_posts_at_request',
+        'output': 'requester_num_posts'
+    },
+    {
+        'input': 'requester_number_of_posts_on_raop_at_request',
+        'output': 'requester_num_posts_in_raop'
+    },
+
+    # This has to be the last field since it's the class column!
+    {
+        'input': 'requester_received_pizza',
+        'output': 'recieved_pizza(class)'
+    }
 ]
 
 
