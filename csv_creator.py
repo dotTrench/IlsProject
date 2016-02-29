@@ -36,7 +36,19 @@ fields = [
         'input': 'requester_number_of_posts_on_raop_at_request',
         'output': 'requester_num_posts_in_raop'
     },
-
+    {
+        'input': 'requester_number_of_subreddits_at_request',
+        'output': 'requester_num_subreddits'
+    },
+    {
+        'input': 'requester_upvotes_minus_downvotes_at_request',
+        'output': 'requester_upvotes_minus_downvotes'
+    },
+    {
+        'input': 'requester_username',
+        'converter': word_count_convert,
+        'output': 'requester_username_length'
+    },
     # This has to be the last field since it's the class column!
     {
         'input': 'requester_received_pizza',
