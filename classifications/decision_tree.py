@@ -35,20 +35,38 @@ class DecisionTree(ClassificationAlgorithm):
 
         return entropy
 
-    def _gain(self, x, y):
-        entropy_s = self._entropy(x, y)
-        entropy_t = 0
-        pass
+    def _gain(self, x, y, i):
+        # TODO: Verify that this actually works
+        # And make me less ugly
+
+        val_freq = {}
+        subset_entropy = 0.0
+
+        for record in x:
+            if record[i] in val_freq:
+                val_freq[record[i]] += 1
+            else:
+                val_freq[record[i]] = 1
+        # Calculate the sum of the entropy for each subset of records weighted
+        # by their probability of occuring in the training set.
+        for val in val_freq.keys():
+            val_prob = val_freq[val] / sum(val_freq.values())
+            data_subset = [record for record in x if record[i] == val]
+            subset_entropy += val_prob * self._entropy(data_subset, y)
+
+        # Subtract the entropy of the chosen attribute from the entropy of the
+        # whole x set with respect to the target attribute (and return it)
+        return (self._entropy(x, y) - subset_entropy)
 
     def _majority_value(self, y):
+        # TODO: Actually implement me
         c = Counter(y)
-        print(c)
         return y[0]
 
     def fit(self, x, y):
         self._root = self._build_tree(x, y)
-        print(self._root)
 
+    """ builds the actual tree recursivly """
     def _build_tree(self, x, y):
         if len(x[0]) <= 0:
             val = self._majority_value(y)
@@ -73,11 +91,22 @@ class DecisionTree(ClassificationAlgorithm):
 
         return tree
 
+    """ Returns an integer value where the the split should occur """
     def _choose_best_attribute(self, x, y):
         # This is where the magic happens
-        return 0
+        # TODO: Magic!
+        cur_max = 0
+        index = 0
+        for i in range(len(x[0])):
+            gain = self._gain(x, y, i)
+            if gain > cur_max:
+                cur_max = gain
+                index = i
+
+        return index
 
     def get_examples(self, x, y, attribute, val):
+        # TODO: Please make me pretty
         new_x = []
         new_y = []
         for i in range(len(x)):
@@ -92,6 +121,7 @@ class DecisionTree(ClassificationAlgorithm):
         return np.array(new_x), np.array(new_y)
 
     def get_values(self, x, attribute):
+        # TODO: Make me private
         return x[:, attribute]
 
     def predict(self, x):
