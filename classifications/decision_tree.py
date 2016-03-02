@@ -1,4 +1,5 @@
 import numpy as np
+from collections import Counter
 from .classification_algorithm import ClassificationAlgorithm
 
 
@@ -14,6 +15,7 @@ class DecisionTree(ClassificationAlgorithm):
         self.max_depth = None
         self.samples_leaf = None
         self.laplace = None
+        self._root = {}
 
     def _entropy(x, y):
         pass
@@ -22,9 +24,15 @@ class DecisionTree(ClassificationAlgorithm):
         pass
 
     def _majority_value(self, y):
+        c = Counter(y)
+        print(c)
         return y[0]
 
     def fit(self, x, y):
+        self._root = self._build_tree(x, y)
+        print(self._root)
+
+    def _build_tree(self, x, y):
         if len(x[0]) <= 0:
             val = self._majority_value(y)
             return val
@@ -36,18 +44,21 @@ class DecisionTree(ClassificationAlgorithm):
         # choose_best_attribute(x, y)
         # best_attribute = _choose_best_attribute(x, y)
         # Choose best attribute to split on
-        best = 0
-        tree = {best: {}}
-        # Rebuild a
+        best = self._choose_best_attribute(x, y)
 
+        tree = {best: {}}
         attribute_values = self.get_values(x, best)
         # Create new tree for each value in each column
         for val in attribute_values:
             new_x, new_y = self.get_examples(x, y, best, val)
-            sub_tree = self.fit(new_x, new_y)
+            sub_tree = self._build_tree(new_x, new_y)
             tree[best][val] = sub_tree
 
         return tree
+
+    def _choose_best_attribute(self, x, y):
+        # This is where the magic happens
+        return 0
 
     def get_examples(self, x, y, attribute, val):
         new_x = []

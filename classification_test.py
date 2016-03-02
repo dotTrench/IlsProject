@@ -10,4 +10,3 @@ dataset = datasets.load_iris()
 
 tree = DecisionTree()
 t = tree.fit(dataset.data, dataset.target)
-pprint.pprint(t)
