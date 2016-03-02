@@ -1,8 +1,5 @@
+import numpy as np
 from .classification_algorithm import ClassificationAlgorithm
-
-
-def check_is_unique(lst):
-    return lst.all(lst[0])
 
 
 class Node():
@@ -24,30 +21,50 @@ class DecisionTree(ClassificationAlgorithm):
     def _gain(x, y):
         pass
 
+    def _majority_value(self, y):
+        return y[0]
+
     def fit(self, x, y):
-        # create node
-        n = Node()
+        if len(x[0]) <= 0:
+            val = self._majority_value(y)
+            return val
 
-        # If all examples are positive, Return the single-node tree Root, with
-        # label = +.
-        # If all examples are negative, Return the single-node tree Root, with
-        # label = -.
-        if check_is_unique(y):
-            print(y)
-            # Whatever the common value is
-            return Node(0)
-        # If number of predicting attributes is empty, then Return the single
-        # node tree Root,
+        if np.count_nonzero(y == y[0]) == len(y):
+            # All the elements are the same return this classification
+            return y[0]
 
-        # with label = most common value of the target attribute in the
-        # examples.
-        for i in y:
-            print(i)
+        # choose_best_attribute(x, y)
+        # best_attribute = _choose_best_attribute(x, y)
+        # Choose best attribute to split on
+        best = 0
+        tree = {best: {}}
+        # Rebuild a
 
-        if len(x) <= 0:
-            # Find the most common value in Y
-            return Node(1)
-        print('done')
+        attribute_values = self.get_values(x, best)
+        # Create new tree for each value in each column
+        for val in attribute_values:
+            new_x, new_y = self.get_examples(x, y, best, val)
+            sub_tree = self.fit(new_x, new_y)
+            tree[best][val] = sub_tree
+
+        return tree
+
+    def get_examples(self, x, y, attribute, val):
+        new_x = []
+        new_y = []
+        for i in range(len(x)):
+            entry = x[i]
+            if entry[attribute] == val:
+                new_entry = []
+                new_y.append(y[i])
+                for i in range(len(entry)):
+                    if i != attribute:
+                        new_entry.append(entry[i])
+                new_x.append(new_entry)
+        return np.array(new_x), np.array(new_y)
+
+    def get_values(self, x, attribute):
+        return x[:, attribute]
 
     def predict(self, x):
         pass
