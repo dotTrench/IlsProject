@@ -14,10 +14,19 @@ def get_column(data, column):
 
 def g_calc(dataset, results):
     ginis = []
+    column = None
     for i in range(len(dataset[0])):
         column = get_column(dataset, i)
         print(column)
-        # ginis.append(gini_calc(column, results))
+        ginis.append(gini_calc(column, results))
+
+    x = max(ginis)
+    print(x)
+    y = ginis.index(x)
+    print(y)
+    print(column[1])
+
+    # print(ginis)
     return ginis
 
 
@@ -28,47 +37,54 @@ def gini(results):
     return 1 - val
 
 
-def gini_calc(attribute, results):
-    counter = Counter(results)
-    print(attribute)
-    print(results)
-    for i in range(0, len(attribute)):
-        a = attribute[i]
-        child1 = {}
-        child2 = {}
-        print('A: ' + str(a))
-        for j in range(0, len(attribute)):
-            b = attribute[j]
-            if b <= a:
-                if results[j] in child1:
-                    child1[results[j]] += 1
-                else:
-                    child1[results[j]] = 1
+def get_max_gini_index(dataset, results):
+    max_gini = -float("inf")
+
+    index = 0
+    for i in range(0, len(dataset[0])):
+        column = get_column(dataset, i)
+        print('col :' + column)
+        gini = calc_one_gini(column, results, i)
+        if gini > max_gini:
+            max_gini = gini
+            index = i
+
+    return index
+
+def calc_one_gini(attribute, results, i):
+    a = attribute[i]
+    child1 = {}
+    child2 = {}
+    print('A: ' + str(a))
+    for j in range(0, len(attribute)):
+        b = attribute[j]
+        if b <= a:
+            if results[j] in child1:
+                child1[results[j]] += 1
             else:
-                if results[j] in child2:
-                    child2[results[j]] += 1
-                else:
-                    child2[results[j]] = 1
+                child1[results[j]] = 1
+        else:
+            if results[j] in child2:
+                child2[results[j]] += 1
+            else:
+                child2[results[j]] = 1
 
-        print('Child 1: {0}'.format(child1))
-        print('Child 2: {0}'.format(child2))
-        print()
+    print('Child 1: {0}'.format(child1))
+    print('Child 2: {0}'.format(child2))
+    print()
 
-        child1_list = list(child1.values())
-        child2_list = list(child2.values())
+    child1_list = list(child1.values())
+    child2_list = list(child2.values())
 
-        c1_gini = gini(child1_list)
-        c2_gini = gini(child2_list)
-        print('C1 GINI: {0}'.format(c1_gini))
-        print('C2 GINI: {0}'.format(c2_gini))
+    c1_gini = gini(child1_list)
+    c2_gini = gini(child2_list)
+    print('C1 GINI: {0}'.format(c1_gini))
+    print('C2 GINI: {0}'.format(c2_gini))
 
-        prob_1 = sum(child1_list) / (sum(child1_list) + sum(child2_list))
-        prob_2 = sum(child2_list) / (sum(child1_list) + sum(child2_list))
+    prob_1 = sum(child1_list) / (sum(child1_list) + sum(child2_list))
+    prob_2 = sum(child2_list) / (sum(child1_list) + sum(child2_list))
 
-        full_gini = c1_gini * prob_1 + c2_gini * prob_2
-
-        print('GINI_TOTAL: ' + str(full_gini))
-        return full_gini
+    return c1_gini * prob_1 + c2_gini * prob_2
 
 
 class Node:

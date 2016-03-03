@@ -11,7 +11,7 @@ dataset = datasets.load_iris()
 
 # dt = DecisionTreeClassifier()
 # dt.fit(dataset.data, dataset.target)
-g_calc(np.array([[3, 3], [2, 1], [1, 9], [4, 110]]), np.array(['T', 'F', 'F', 'T']))
+get_max_gini_index(np.array([[3, 3], [2, 1], [1, 9], [4, 110]]), np.array(['T', 'F', 'F', 'T']))
 # v = gini_calc([3, 2, 1, 4], ['T', 'F', 'F', 'T'])
 # print(v)
 # binTree = DecisionTreeBinary()
