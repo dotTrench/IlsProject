@@ -25,51 +25,32 @@ class DecisionTreeBinary:
 
     def fit(self, x, y):
 
-        self.root = self._build_tree(x, y)
+        self.root = self._build_tree(x, y, 0)
 
-    def print_tree(self, node):
-
-        print(str(node.value))
-
-        if node.is_leaf():
-            return
-        else:
-            self.print_tree(node.left_child)
-            self.print_tree(node.right_child)
-
-
-    def _build_tree(self, x, y):
+    def _build_tree(self, x, y, deep):
         print('BUILD TREE')
-        if np.count_nonzero(y == y[0]) == len(y):
+        print(len(x))
+        if np.count_nonzero(y == y[deep]) == len(y):
             print('basfall')
             # All the elements are the same return this classification
             return Node(y[0])
-        print('LEN = ' + str(len(x[0])))
-        print(x)
-        if len(x[0]) <= 0:
+        if deep >= len(x[0]):
             print('basfall')
             # TODO: Return majority value
-            #return Node(y[-1])
-            #return Node(y[0])
-            return Node('F')
+            return Node(y[deep])
 
-        print(y)
+        print("ej basfall")
         # Get split-value for the first attribute in the x-list
-        column = self.get_column(x, 0)
+        print('Deep: ' + str(deep))
+        column = self.get_column(x, deep)
         index = self.calc_attribute_gini(column, y)
         print('Val: ' + str(column[index]))
         print('Ans: ' + str(y[index]))
 
         node = Node(column[index])
 
-        # Create a new x-list without the first attribute
-        new_x = np.delete(x, 0, 1)
-        # Create anew y-list with the new results
-
-        #new_y = np.delete(y, index, 0)
-
         node.left_child = Node(y[index])
-        node.right_child = self._build_tree(new_x, y)
+        node.right_child = self._build_tree(x, y, deep+1)
 
         return node
 
@@ -89,6 +70,7 @@ class DecisionTreeBinary:
 
         for i in range(0, len(attribute)):
             gini = self.calc_node_gini(attribute, results, i)
+            print('Tot. gini: ' + str(gini))
             if gini > max_gini:
                 max_gini = gini
                 index = i
@@ -129,3 +111,31 @@ class DecisionTreeBinary:
         prob_2 = sum(child2_list) / (sum(child1_list) + sum(child2_list))
 
         return c1_gini * prob_1 + c2_gini * prob_2
+
+    def print_tree(self, node):
+
+        print(str(node.value))
+
+        if node.is_leaf():
+            return
+        else:
+            self.print_tree(node.left_child)
+            self.print_tree(node.right_child)
+
+    def predict(self, x):
+        return self._predict2(x, self.root, 0)
+
+    def _predict2(self, dataset, node, deep):
+
+        print()
+        print(dataset)
+        print(node.value)
+        print(deep)
+
+        if node.is_leaf():
+            print('leaf-node')
+            return node.value
+        elif dataset[deep] <= node.value:
+            return self._predict2(dataset, node.left_child, deep+1)
+        else:
+            return self._predict2(dataset, node.right_child, deep+1)

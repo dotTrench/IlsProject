@@ -24,3 +24,7 @@ tree.fit(np.array([[3, 3], [2, 1], [1, 9], [4, 110]]), np.array(['T', 'F', 'F', 
 
 print()
 tree.print_tree(tree.root)
+
+predict = tree.predict(np.array([22, 1]))
+
+print(predict)
