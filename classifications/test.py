@@ -1,5 +1,5 @@
 from collections import Counter
-
+"""
 test = ['A', 'B', 'A', 'A', 'C']
 
 counts = Counter(test)
@@ -15,3 +15,14 @@ for key, c in counts.items():
 x = [1,2,3,4,5,6]
 for i in range(len(x)):
     print(i)
+"""
+
+s = [1, 2, 3, 4, 5, 6]
+
+a = s[:-1]
+b = s[1:]
+
+
+print(a)
+print(b)
+
