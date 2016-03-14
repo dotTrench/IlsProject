@@ -154,13 +154,12 @@ class Node:
 
 class DecisionTree():
     def __init__(self, criterion='gini', max_features=0, max_depth=0,
-                 min_samples_leaf=0, laplace=False):
+                 min_samples_leaf=0):
 
         self.criterion = criterion
         self.max_features = max_features
         self.max_depth = max_depth
         self.min_samples_leaf = min_samples_leaf
-        self.laplace = laplace
         self._root = None
 
     def fit(self, x, y):
