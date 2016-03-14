@@ -170,8 +170,15 @@ class DecisionTree():
         return predict2(self._root, x)
 
     def _build_tree(self, x, y, depth=0):
+        # If depth exceeds max_depth
+        if depth > max_depth:
+            return Node(value=majority_value(y))
+
+        # If all the values in y are the same
         if self._all_values_are_same(y):
             return Node(value=y[0])
+
+        # If there's no more attributes
         if len(x) <= 0:
             return Node(value=majority_value(y))
 
@@ -180,20 +187,10 @@ class DecisionTree():
         x1, y1, x2, y2 = self._split(x, y, split_feature, split_value)
 
         n = Node(feature=split_feature, value=split_value)
-        n.left = self._build_tree(x1, y1)
-        n.right = self._build_tree(x2, y2)
+        n.left = self._build_tree(x1, y1, depth + 1)
+        n.right = self._build_tree(x2, y2, depth + 1)
 
         return n
-
-        # If all values in Y are the same, return Y
-        # if len(x) >= 0: return majority_value(y)
-
-        # j = attribute index?
-        # s = split value
-        # Select split value j,s
-        # Split y on j, s
-        # Build tree on left child where values are smaller than y
-        # Build tree on right child where values are greater or equal to y
 
     def _split_value_gini_calc(self, column, value, results):
         """ returns the gini value column is split at value("value") """
