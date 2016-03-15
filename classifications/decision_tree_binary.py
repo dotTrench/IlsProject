@@ -7,24 +7,14 @@ import numpy as np
 from sklearn import datasets
 
 
-class TestPredict():
-    def test_predict(self):
-        t = DecisionTree()
-        dataset = datasets.load_iris()
-        t.fit(dataset.data, dataset.target)
-        r = t.predict([4.9, 3.0, 1.4, 0.2])
-        self.assertEqual(r, 0)
-
-
-class TestMajorityValue():
+class TestMajorityValue(unittest.TestCase):
     def test_majority_value(self):
         t = DecisionTree()
         i = np.array([1, 2, 3, 1, 2, 1, 1, 1, 3, 2, 2, 1])
+        value, probability = t._majority_value(i)
 
-        actual = t._majority_value(i)
-
-        expected = 1
-        self.assertEqual(actual, expected)
+        self.assertEqual(value, 1)
+        self.assertEqual(probability, 0.5)
 
 
 class TestAllValuesSame(unittest.TestCase):
@@ -52,9 +42,8 @@ class TestGini(unittest.TestCase):
 
         i = np.array([1, 1, 1])
         actual = t._gini(i)
-        expected = 0.666666666
 
-        self.assertAlmostEqual(actual, expected, places=7)
+        self.assertAlmostEqual(actual, 0.666666666)
 
 
 class GetSplitValuesTest(unittest.TestCase):
@@ -65,8 +54,7 @@ class GetSplitValuesTest(unittest.TestCase):
 
         actual = t._get_split_values(i)
 
-        expected = np.array([5.0, 5.75, 7.0])
-        np.testing.assert_allclose(expected, actual)
+        np.testing.assert_allclose(actual, [5.0, 5.75, 7.0])
 
 
 class SplitValueGiniCalcTet(unittest.TestCase):
@@ -143,6 +131,22 @@ class BuildTreeTestCase(unittest.TestCase):
         t.fit(x, y)
 
 
+class PredictTreeTestCase(unittest.TestCase):
+    # This test case just makes sure it doesn't crash, not really that
+    # useful on its own
+    def test_predict(self):
+        x = np.array([
+            [5.1, 3.5, 1.4, 0.2],
+            [4.9, 3.0, 1.4, 0.2],
+            [6.4, 2.9, 4.3, 1.3],
+            [7.6, 3.0, 6.6, 2.1]])
+        y = np.array([0, 0, 1, 2])
+
+        t = DecisionTree()
+        t.fit(x, y)
+        t.predict([4.9, 3.0, 1.4, 0.2])
+
+
 class Node:
     def __init__(self, feature=None, value=None):
         self.value = value
@@ -170,37 +174,44 @@ class DecisionTree():
     def predict(self, x):
         return predict2(self._root, x)
 
+    def _get_majority_node(self, y):
+        """ Returns a node with a value of the majority value in y"""
+        value, probability = self._majority_value(y)
+        return Node(value=value)
+
     def _build_tree(self, x, y, depth=0):
         # If depth exceeds max_depth
         if depth > self.max_depth and self.max_depth > 0:
-            return Node(value=self._majority_value(y))
+            return self._get_majority_node(y)
 
         # If all the values in y are the same
         if self._all_values_are_same(y):
             return Node(value=y[0])
 
         num_features = len(x)
+
         # If num_features the max features set in the constructor
         if num_features > self.max_features:
-            return Node(value=self._majority_value(y))
+            return self._get_majority_node(y)
 
         # If there's no more features
         if num_features <= 0:
-            return Node(value=self._majority_value(y))
+            return self._get_majority_node(y)
 
-        split_feature, split_value = self._get_best_split_point(x, y)
+        # Else perform a split
+        else:
+            split_feature, split_value = self._get_best_split_point(x, y)
 
-        x1, y1, x2, y2 = self._split(x, y, split_feature, split_value)
+            x1, y1, x2, y2 = self._split(x, y, split_feature, split_value)
 
-        n = Node(feature=split_feature, value=split_value)
-        n.left = self._build_tree(x1, y1, depth + 1)
-        n.right = self._build_tree(x2, y2, depth + 1)
+            n = Node(feature=split_feature, value=split_value)
+            n.left = self._build_tree(x1, y1, depth + 1)
+            n.right = self._build_tree(x2, y2, depth + 1)
 
-        return n
+            return n
 
     def _split_value_gini_calc(self, column, value, results):
         """ returns the gini value column is split at value("value") """
-        from pprint import pprint
         lt_freq = {}
         ht_freq = {}
 
@@ -238,7 +249,13 @@ class DecisionTree():
 
     def _majority_value(self, y):
         c = Counter(y)
-        return c.most_common(1)
+        most_common = c.most_common(1)
+        value, amount = most_common[0]
+
+        elements = list(c.elements())
+        probability = amount / len(elements)
+
+        return value, probability
 
     def _all_values_are_same(self, y):
         return len(np.unique(y)) == 1
