@@ -159,7 +159,7 @@ class Node:
 
 
 class DecisionTree():
-    def __init__(self, criterion='gini', max_features=0, max_depth=0,
+    def __init__(self, criterion='gini', max_features=None, max_depth=None,
                  min_samples_leaf=0):
 
         self.criterion = criterion
@@ -181,7 +181,7 @@ class DecisionTree():
 
     def _build_tree(self, x, y, depth=0):
         # If depth exceeds max_depth
-        if depth > self.max_depth and self.max_depth > 0:
+        if self.max_depth is not None and depth > self.max_depth:
             return self._get_majority_node(y)
 
         # If all the values in y are the same
@@ -191,7 +191,7 @@ class DecisionTree():
         num_features = len(x)
 
         # If num_features the max features set in the constructor
-        if num_features > self.max_features:
+        if self.max_features is not None and num_features > self.max_features:
             return self._get_majority_node(y)
 
         # If there's no more features
