@@ -2,7 +2,6 @@ import numpy as np
 from collections import Counter
 import math
 import time
-import unittest
 import numpy as np
 from sklearn import datasets
 
@@ -46,14 +45,19 @@ class DecisionTree:
         self._root = self._build_tree(x, y)
 
     def predict_proba(self, x):
-        return self._find(self._root, x).probability
+        return self.find(x).probability
 
     def predict(self, x):
-        return self._find(self._root, x).value
+        return self.find(x).value
+
+    def find(self, x):
+        if self._root is not None:
+            return self._find(self._root, x)
 
     def _get_majority_node(self, y):
         """ Returns a node with a value of the majority value in y"""
         value, probability = self._majority_value(y)
+
         return Node(value=value, probability=probability)
 
     def _build_tree(self, x, y, depth=0):
@@ -211,6 +215,3 @@ class DecisionTree:
             return self._root.__str__()
 
         return self
-
-if __name__ == '__main__':
-    unittest.main()

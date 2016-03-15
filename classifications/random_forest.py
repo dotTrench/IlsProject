@@ -10,15 +10,15 @@ class RandomForest:
                  max_depth=None, min_samples_leaf=1, bagging=False,
                  sample_size=1.0):
 
-        self.criterion = criterion
-        self.max_features = max_features
-        self.max_depth = max_depth
-        self.min_samples_leaf = min_samples_leaf
+        self.criterion = criterion                  # Done
+        self.max_features = max_features            # Done
+        self.max_depth = max_depth                  # Done
+        self.min_samples_leaf = min_samples_leaf    # Done
         self.bagging = bagging
-        self.sample_size = sample_size
+        self.sample_size = sample_size              # Done
+        self.n_estimators = n_estimators            # Done
 
         self._decision_trees = []
-        self.n_estimators = n_estimators
 
     def fit(self, x, y):
 
@@ -28,7 +28,11 @@ class RandomForest:
         subsets_x, subsets_y = self._create_random_subsets(x, y)
 
         for i in range(self.n_estimators):
-            tree = DecisionTree()
+            tree = DecisionTree(criterion=self.criterion,
+                                max_features=self.max_features,
+                                max_depth=self.max_depth,
+                                min_samples_leaf=self.min_samples_leaf)
+
             tree.fit(subsets_x[i], subsets_y[i])
             self._decision_trees.append(tree)
 
@@ -39,6 +43,7 @@ class RandomForest:
             r = randint(0, len(x) - 1)
             subset_x.append(x[r])
             subset_y.append(y[r])
+
         return subset_x, subset_y
 
     def _create_random_subsets(self, x, y):
@@ -57,19 +62,20 @@ class RandomForest:
         results = [t.predict(x) for t in self._decision_trees]
         c = Counter(results)
         val, frequency = c.most_common(1)[0]
+
         return val
 
     def predict_proba(self, x):
-        raise NotImplementedError('Not implemented')
+        results = [t.predict_proba(x) for t in self._decision_trees]
 
 
-forest = RandomForest()
-tree = DecisionTree()
+if __name__ == '__main__':
+    forest = RandomForest()
+    tree = DecisionTree()
 
-iris = datasets.load_iris()
-# tree.fit(iris.data, iris.target)
-# tree.print_tree()
-forest.fit(iris.data, iris.target)
-r = forest.predict(iris.data[0])
-print(r)
-# forest.fit([[3, 4], [2, 6], [4, 6], [1, 6], [9, 11], [21, 15]], ["T", "F", "T", "F", "T", "T"])
+    iris = datasets.load_iris()
+    # tree.fit(iris.data, iris.target)
+    # tree.print_tree()
+    forest.fit(iris.data, iris.target)
+    r = forest.predict(iris.data[0])
+    print(r)
