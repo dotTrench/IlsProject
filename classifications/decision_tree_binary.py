@@ -7,7 +7,7 @@ import numpy as np
 from sklearn import datasets
 
 
-class TestMajorityValue(unittest.TestCase):
+class DecisionTreeTests(unittest.TestCase):
     def test_majority_value(self):
         t = DecisionTree()
         i = np.array([1, 2, 3, 1, 2, 1, 1, 1, 3, 2, 2, 1])
@@ -16,8 +16,6 @@ class TestMajorityValue(unittest.TestCase):
         self.assertEqual(value, 1)
         self.assertEqual(probability, 0.5)
 
-
-class TestAllValuesSame(unittest.TestCase):
     def test_returns_true_with_identical_values(self):
         t = DecisionTree()
 
@@ -30,8 +28,6 @@ class TestAllValuesSame(unittest.TestCase):
         i = np.array([1, 2, 3])
         self.assertFalse(t._all_values_are_same(i))
 
-
-class TestGini(unittest.TestCase):
     def test_gini(self):
         t = DecisionTree()
 
@@ -45,8 +41,6 @@ class TestGini(unittest.TestCase):
 
         self.assertAlmostEqual(actual, 0.666666666)
 
-
-class GetSplitValuesTest(unittest.TestCase):
     def test_get_split_values(self):
         t = DecisionTree()
 
@@ -56,8 +50,6 @@ class GetSplitValuesTest(unittest.TestCase):
 
         np.testing.assert_allclose(actual, [5.0, 5.75, 7.0])
 
-
-class SplitValueGiniCalcTet(unittest.TestCase):
     def test_value_gini_calc(self):
         t = DecisionTree()
 
@@ -67,8 +59,6 @@ class SplitValueGiniCalcTet(unittest.TestCase):
 
         self.assertAlmostEqual(actual, 0.4999995, places=4)
 
-
-class BestSplitPointCalcTest(unittest.TestCase):
     def test_get_best_split_point(self):
         t = DecisionTree()
         x = np.array([
@@ -83,8 +73,6 @@ class BestSplitPointCalcTest(unittest.TestCase):
         self.assertEqual(a, 0)
         self.assertEqual(v, 5.75)
 
-
-class SplitTestCase(unittest.TestCase):
     def test_split(self):
         t = DecisionTree()
 
@@ -115,8 +103,6 @@ class SplitTestCase(unittest.TestCase):
         np.testing.assert_allclose(lt_x_expected, lt_x)
         np.testing.assert_allclose(lt_y_expected, lt_y)
 
-
-class BuildTreeTestCase(unittest.TestCase):
     def test_build_tree(self):
         # This test case just makes sure it doesn't crash, not really that
         # useful on its own
@@ -130,8 +116,6 @@ class BuildTreeTestCase(unittest.TestCase):
         t = DecisionTree()
         t.fit(x, y)
 
-
-class PredictTreeTestCase(unittest.TestCase):
     # This test case just makes sure it doesn't crash, not really that
     # useful on its own
     def test_predict(self):
@@ -148,9 +132,12 @@ class PredictTreeTestCase(unittest.TestCase):
 
 
 class Node:
-    def __init__(self, feature=None, value=None):
+    def __init__(self, feature=None, value=None, probability=None):
         self.value = value
         self.feature = feature
+        self.probability = probability
+
+        # Children
         self.left = None
         self.right = None
 
@@ -160,7 +147,7 @@ class Node:
 
 class DecisionTree():
     def __init__(self, criterion='gini', max_features=None, max_depth=None,
-                 min_samples_leaf=0):
+                 min_samples_leaf=1):
 
         self.criterion = criterion
         self.max_features = max_features
@@ -177,7 +164,7 @@ class DecisionTree():
     def _get_majority_node(self, y):
         """ Returns a node with a value of the majority value in y"""
         value, probability = self._majority_value(y)
-        return Node(value=value)
+        return Node(value=value, probability=probability)
 
     def _build_tree(self, x, y, depth=0):
         # If depth exceeds max_depth
@@ -186,7 +173,7 @@ class DecisionTree():
 
         # If all the values in y are the same
         if self._all_values_are_same(y):
-            return Node(value=y[0])
+            return Node(value=y[0], probability=1)
 
         num_features = len(x)
 
