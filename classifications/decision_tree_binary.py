@@ -158,7 +158,6 @@ class BuildTreeTestCase(unittest.TestCase):
 
         t = DecisionTree()
         t.fit(x, y)
-        print(t._root)
 
 
 class Node:
@@ -216,7 +215,11 @@ class DecisionTree:
         if self._all_values_are_same(y):
             return Node(value=y[0], probability=1)
 
-        num_features = len(x)
+        # Not sure if this is how it's meant to be done
+        if self._all_values_are_same(x):
+            return self._get_majority_node(y)
+
+        num_features = len(x[0])
 
         # If num_features the max features set in the constructor
         if self.max_features is not None and num_features > self.max_features:
@@ -229,7 +232,6 @@ class DecisionTree:
         # Else perform a split
         else:
             split_feature, split_value = self._get_best_split_point(x, y)
-
             x1, y1, x2, y2 = self._split(x, y, split_feature, split_value)
 
             n = Node(feature=split_feature, value=split_value)
@@ -240,7 +242,6 @@ class DecisionTree:
 
     def _split_value_gini_calc(self, column, value, results):
         """ returns the gini value column is split at value("value") """
-        from pprint import pprint
         lt_freq = {}
         ht_freq = {}
 
@@ -295,19 +296,17 @@ class DecisionTree:
 
     def _get_split_values(self, values):
         values = np.unique(values)
-
         return (values[:-1] + values[1:]) / 2
+#        return np.array(values[0])
 
     def _get_best_split_point(self, x, y):
         features = self._generate_features(x[0])
-
         best_gini = np.inf
         best_feature = None
         best_value = None
 
         for f in features:
             column = x[:, f]
-
             split_values = self._get_split_values(column)
             for v in split_values:
                 gini = self._split_value_gini_calc(column, v, y)
@@ -333,10 +332,12 @@ class DecisionTree:
                 lt_x.append(x[i])
                 lt_y.append(y[i])
 
-        ht_x = np.delete(ht_x, feature, 1)
-        lt_x = np.delete(lt_x, feature, 1)
+        if len(ht_x) > 0:
+            ht_x = np.delete(ht_x, feature, 1)
+        if len(lt_x) > 0:
+            lt_x = np.delete(lt_x, feature, 1)
 
-        return ht_x, ht_y, lt_x, lt_y
+        return np.array(ht_x), np.array(ht_y), np.array(lt_x), np.array(lt_y)
 
     def _predict2(self, node, x):
         if node.is_leaf():
@@ -352,17 +353,14 @@ class DecisionTree:
             return self._predict2(node.right, x)
 
     def print_tree(self):
-        print("printing tree")
-        self.print_tree2(self._root)
+        if self._root is not None:
+            print(self._root)
 
-    def print_tree2(self, node):
-        print("Value: " + str(node.value))
-        if node.is_leaf():
-            print("(Leaf-node)")
-            return
+    def __str__(self):
+        if self._root is not None:
+            return self._root.__str__
 
-        self.print_tree2(node.left)
-        self.print_tree2(node.right)
+        return 'NONE XD'
 
 if __name__ == '__main__':
     unittest.main()
