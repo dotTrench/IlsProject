@@ -16,6 +16,11 @@ class DecisionTreeTests(unittest.TestCase):
         self.assertEqual(value, 1)
         self.assertEqual(probability, 0.5)
 
+        expected = 1
+        self.assertEqual(actual, expected)
+
+
+class TestAllValuesSame(unittest.TestCase):
     def test_returns_true_with_identical_values(self):
         t = DecisionTree()
 
@@ -28,6 +33,8 @@ class DecisionTreeTests(unittest.TestCase):
         i = np.array([1, 2, 3])
         self.assertFalse(t._all_values_are_same(i))
 
+
+class TestGini(unittest.TestCase):
     def test_gini(self):
         t = DecisionTree()
 
@@ -38,9 +45,12 @@ class DecisionTreeTests(unittest.TestCase):
 
         i = np.array([1, 1, 1])
         actual = t._gini(i)
+        expected = 0.666666666
 
         self.assertAlmostEqual(actual, 0.666666666)
 
+
+class GetSplitValuesTest(unittest.TestCase):
     def test_get_split_values(self):
         t = DecisionTree()
 
@@ -50,6 +60,8 @@ class DecisionTreeTests(unittest.TestCase):
 
         np.testing.assert_allclose(actual, [5.0, 5.75, 7.0])
 
+
+class SplitValueGiniCalcTet(unittest.TestCase):
     def test_value_gini_calc(self):
         t = DecisionTree()
 
@@ -59,6 +71,8 @@ class DecisionTreeTests(unittest.TestCase):
 
         self.assertAlmostEqual(actual, 0.4999995, places=4)
 
+
+class BestSplitPointCalcTest(unittest.TestCase):
     def test_get_best_split_point(self):
         t = DecisionTree()
         x = np.array([
@@ -73,6 +87,8 @@ class DecisionTreeTests(unittest.TestCase):
         self.assertEqual(a, 0)
         self.assertEqual(v, 5.75)
 
+
+class SplitTestCase(unittest.TestCase):
     def test_split(self):
         t = DecisionTree()
 
@@ -103,6 +119,8 @@ class DecisionTreeTests(unittest.TestCase):
         np.testing.assert_allclose(lt_x_expected, lt_x)
         np.testing.assert_allclose(lt_y_expected, lt_y)
 
+
+class BuildTreeTestCase(unittest.TestCase):
     def test_build_tree(self):
         # This test case just makes sure it doesn't crash, not really that
         # useful on its own
@@ -130,6 +148,18 @@ class DecisionTreeTests(unittest.TestCase):
         t.fit(x, y)
         t.predict([4.9, 3.0, 1.4, 0.2])
 
+    def test_print(self):
+        x = np.array([
+            [5.1, 3.5, 1.4, 0.2],
+            [4.9, 3.0, 1.4, 0.2],
+            [6.4, 2.9, 4.3, 1.3],
+            [7.6, 3.0, 6.6, 2.1]])
+        y = np.array([0, 0, 1, 2])
+
+        t = DecisionTree()
+        t.fit(x, y)
+        print(t._root)
+
 
 class Node:
     def __init__(self, feature=None, value=None, probability=None):
@@ -144,8 +174,19 @@ class Node:
     def is_leaf(self):
         return self.left is None and self.right is None
 
+    def __str__(self, level=0):
+        ret = '\t' * level
+        if self.is_leaf():
+            ret += 'Leaf:{0}:{1}%'.format(self.value, (self.probability * 100))
+        else:
+            ret += 'Feature:{0} Value:{1}\n'.format(self.feature, self.value)
+            ret += '\t' * level + 'L: ' + self.left.__str__(level + 1) + '\n'
+            ret += '\t' * level + 'R: ' + self.right.__str__(level + 1) + '\n'
 
-class DecisionTree():
+        return ret
+
+
+class DecisionTree:
     def __init__(self, criterion='gini', max_features=None, max_depth=None,
                  min_samples_leaf=1):
 
@@ -159,7 +200,7 @@ class DecisionTree():
         self._root = self._build_tree(x, y)
 
     def predict(self, x):
-        return predict2(self._root, x)
+        return self._predict2(self._root, x)
 
     def _get_majority_node(self, y):
         """ Returns a node with a value of the majority value in y"""
@@ -199,6 +240,7 @@ class DecisionTree():
 
     def _split_value_gini_calc(self, column, value, results):
         """ returns the gini value column is split at value("value") """
+        from pprint import pprint
         lt_freq = {}
         ht_freq = {}
 
@@ -305,9 +347,22 @@ class DecisionTree():
         x = np.delete(x, f, 0)
 
         if val <= node.value:
-            return predict2(node.left, x)
+            return self._predict2(node.left, x)
         else:
-            return predict2(node.right, x)
+            return self._predict2(node.right, x)
+
+    def print_tree(self):
+        print("printing tree")
+        self.print_tree2(self._root)
+
+    def print_tree2(self, node):
+        print("Value: " + str(node.value))
+        if node.is_leaf():
+            print("(Leaf-node)")
+            return
+
+        self.print_tree2(node.left)
+        self.print_tree2(node.right)
 
 if __name__ == '__main__':
     unittest.main()
