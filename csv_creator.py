@@ -59,6 +59,26 @@ fields = [
         'converter': word_count_convert,
         'output': 'requester_username_length'
     },
+    {
+        'input': ['requester_account_age_in_days_at_request','requester_number_of_posts_at_request'],
+        'output': 'post_per_day_at_request'
+    },
+    {
+        'input': ['requester_account_age_in_days_at_request','requester_number_of_comments_at_request'],
+        'output': 'comments_per_day_at_request'
+    },
+    {
+        'input': ['requester_account_age_in_days_at_request','requester_number_of_comments_on_raop_at_request','requester_num_of_posts_on_roap_at_request'],
+        'output': 'requester_activity_on_raop'
+    },
+    {
+        'input': ['requester_account_age_in_days_at_request','requester_number_of_post_at_request','requester_number_of_comments_at_request','requester_number_of_subreddits_at_request'],
+        'output': 'requester_activity_on_reddit'
+    },
+    {
+        'input': ['requester_account_age_in_days_at_request','requester_upvotes_minus_downvotes_at_request'],
+        'output': 'upvotes_minus_downvotes_per_day'
+    },
     # This has to be the last field since it's the class column!
     {
         'input': 'requester_received_pizza',
