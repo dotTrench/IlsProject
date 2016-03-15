@@ -130,6 +130,8 @@ class SplitTestCase(unittest.TestCase):
 
 class BuildTreeTestCase(unittest.TestCase):
     def test_build_tree(self):
+        # This test case just makes sure it doesn't crash, not really that
+        # useful on its own
         x = np.array([
             [5.1, 3.5, 1.4, 0.2],
             [4.9, 3.0, 1.4, 0.2],
@@ -170,15 +172,20 @@ class DecisionTree():
 
     def _build_tree(self, x, y, depth=0):
         # If depth exceeds max_depth
-        if depth > self.max_depth:
+        if depth > self.max_depth and self.max_depth > 0:
             return Node(value=self._majority_value(y))
 
         # If all the values in y are the same
         if self._all_values_are_same(y):
             return Node(value=y[0])
 
-        # If there's no more attributes
-        if len(x) <= 0:
+        num_features = len(x)
+        # If num_features the max features set in the constructor
+        if num_features > self.max_features:
+            return Node(value=self._majority_value(y))
+
+        # If there's no more features
+        if num_features <= 0:
             return Node(value=self._majority_value(y))
 
         split_feature, split_value = self._get_best_split_point(x, y)
@@ -299,16 +306,4 @@ class DecisionTree():
             return predict2(node.right, x)
 
 if __name__ == '__main__':
-    # x = np.array([
-    #         [5.1, 3.5, 1.4, 0.2],
-    #         [4.9, 3.0, 1.4, 0.2],
-    #         [6.4, 2.9, 4.3, 1.3],
-    #         [7.6, 3.0, 6.6, 2.1]])
-    # y = np.array([0, 0, 1, 2])
-
-    # t = DecisionTree()
-    # t.fit(x, y)
-    # # print(t._root.value)
-    # r = t.predict([6.4, 2.9, 4.3, 1.3])
-    # print(r)
     unittest.main()
