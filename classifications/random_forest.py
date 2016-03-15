@@ -21,10 +21,6 @@ class RandomForest:
         self._decision_trees = []
 
     def fit(self, x, y):
-
-        # Create n random subsets from the x-list
-        # Each tree is usualy trained on 2/3 of the data
-
         subsets_x, subsets_y = self._create_random_subsets(x, y)
 
         for i in range(self.n_estimators):
@@ -35,6 +31,25 @@ class RandomForest:
 
             tree.fit(subsets_x[i], subsets_y[i])
             self._decision_trees.append(tree)
+
+    def predict(self, x):
+        results = [t.predict(x) for t in self._decision_trees]
+        c = Counter(results)
+        val, _ = c.most_common(1)[0]
+
+        return val
+
+    def predict_proba(self, x):
+        nodes = [t.find(x) for t in self._decision_trees]
+
+        values = [n.value for n in nodes]
+
+        c = Counter(values)
+        val, _ = c.most_common(1)[0]
+
+        probabilities = [n.probability for n in nodes if n.value == val]
+
+        return sum(probabilities) / len(values)
 
     def _generate_subset(self, num_samples, x, y):
         subset_x = []
@@ -58,16 +73,6 @@ class RandomForest:
 
         return np.array(subsets_x), np.array(subsets_y)
 
-    def predict(self, x):
-        results = [t.predict(x) for t in self._decision_trees]
-        c = Counter(results)
-        val, frequency = c.most_common(1)[0]
-
-        return val
-
-    def predict_proba(self, x):
-        results = [t.predict_proba(x) for t in self._decision_trees]
-
 
 if __name__ == '__main__':
     forest = RandomForest()
@@ -77,5 +82,5 @@ if __name__ == '__main__':
     # tree.fit(iris.data, iris.target)
     # tree.print_tree()
     forest.fit(iris.data, iris.target)
-    r = forest.predict(iris.data[0])
+    r = forest.predict_proba(iris.data[3])
     print(r)
