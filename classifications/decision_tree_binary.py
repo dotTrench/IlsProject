@@ -130,6 +130,18 @@ class DecisionTreeTests(unittest.TestCase):
         t.fit(x, y)
         t.predict([4.9, 3.0, 1.4, 0.2])
 
+    def test_print(self):
+        x = np.array([
+            [5.1, 3.5, 1.4, 0.2],
+            [4.9, 3.0, 1.4, 0.2],
+            [6.4, 2.9, 4.3, 1.3],
+            [7.6, 3.0, 6.6, 2.1]])
+        y = np.array([0, 0, 1, 2])
+
+        t = DecisionTree()
+        t.fit(x, y)
+        print(t._root)
+
 
 class Node:
     def __init__(self, feature=None, value=None, probability=None):
@@ -143,6 +155,17 @@ class Node:
 
     def is_leaf(self):
         return self.left is None and self.right is None
+
+    def __str__(self, level=0):
+        ret = '\t' * level
+        if self.is_leaf():
+            ret += 'Leaf:{0}:{1}%'.format(self.value, (self.probability * 100))
+        else:
+            ret += 'Feature:{0} Value:{1}\n'.format(self.feature, self.value)
+            ret += '\t' * level + 'L: ' + self.left.__str__(level + 1) + '\n'
+            ret += '\t' * level + 'R: ' + self.right.__str__(level + 1) + '\n'
+
+        return ret
 
 
 class DecisionTree():
