@@ -6,13 +6,16 @@ from collections import Counter
 
 
 class RandomForest:
-    def __init__(self, n_estimators=10):
-        self.criterion = None
-        self.max_features = None
-        self.max_depth = None
-        self.max_samples_leaf = None
-        self.bagging = None
-        self.sample_size = None
+    def __init__(self, n_estimators=10, criterion='gini', max_features=None,
+                 max_depth=None, min_samples_leaf=1, bagging=False,
+                 sample_size=1.0):
+
+        self.criterion = criterion
+        self.max_features = max_features
+        self.max_depth = max_depth
+        self.min_samples_leaf = min_samples_leaf
+        self.bagging = bagging
+        self.sample_size = sample_size
 
         self._decision_trees = []
         self.n_estimators = n_estimators
@@ -42,7 +45,7 @@ class RandomForest:
         subsets_x = []
         subsets_y = []
 
-        num_samples = round(len(x) * 0.2)
+        num_samples = round(len(x) * self.sample_size)
         for i in range(self.n_estimators):
             sub_x, sub_y = self._generate_subset(num_samples, x, y)
             subsets_x.append(sub_x)
@@ -60,7 +63,7 @@ class RandomForest:
         raise NotImplementedError('Not implemented')
 
 
-forest = RandomForest(500)
+forest = RandomForest()
 tree = DecisionTree()
 
 iris = datasets.load_iris()
