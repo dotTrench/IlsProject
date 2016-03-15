@@ -16,9 +16,6 @@ class DecisionTreeTests(unittest.TestCase):
         self.assertEqual(value, 1)
         self.assertEqual(probability, 0.5)
 
-        expected = 1
-        self.assertEqual(actual, expected)
-
 
 class TestAllValuesSame(unittest.TestCase):
     def test_returns_true_with_identical_values(self):

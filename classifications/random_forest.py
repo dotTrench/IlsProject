@@ -5,14 +5,16 @@ from sklearn import datasets
 
 
 class RandomForest:
-    def __init__(self, n_estimators):
+    def __init__(self, n_estimators=10):
         self.criterion = None
         self.max_features = None
         self.max_depth = None
         self.max_samples_leaf = None
-        self.n_estimators = n_estimators
         self.bagging = None
         self.sample_size = None
+
+        self._decision_trees = []
+        self.n_estimators = n_estimators
 
     def fit(self, x, y):
 
@@ -21,18 +23,10 @@ class RandomForest:
 
         subsets_x, subsets_y = self._create_random_subsets(x, y)
 
-        # Create n decision trees from the subsets
-        decision_trees = []
         for i in range(self.n_estimators):
             tree = DecisionTree()
             tree.fit(subsets_x[i], subsets_y[i])
-            tree.print_tree()
-            decision_trees.append(tree)
-
-        # for i in range(self.n_estimators):
-        #     decision_trees[i].print_tree()
-
-        # decision_trees[0].print_tree()
+            self._decision_trees.append(tree)
 
     def _create_random_subsets(self, x, y):
         subsets_x = []
