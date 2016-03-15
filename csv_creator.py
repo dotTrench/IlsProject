@@ -5,7 +5,17 @@ def word_count_convert(value):
     return len(value)
 
 
+def test_converter(values):
+    print(values)
+    return -1
+
+
 fields = [
+    {
+        'input': ['requester_account_age_in_days_at_request', 'request_title'],
+        'converter': test_converter,
+        'output': 'lol'
+    },
     {
         'input': 'requester_account_age_in_days_at_request',
         'output': 'requester_account_age'
@@ -67,14 +77,19 @@ def read_input_file(filepath):
 def convert_entry_to_row(entry):
     values = []
     for field in fields:
-        value = entry[field['input']]
+        input_field = field['input']
+        if type(input_field) is list:
+            input_values = [entry[i] for i in input_field]
 
-        output_value = None
-        if 'converter' in field:
-            output_value = field['converter'](value)
+            output_value = field['converter'](input_values)
         else:
-            output_value = value
+            value = entry[input_field]
 
+            output_value = None
+            if 'converter' in field:
+                output_value = field['converter'](value)
+            else:
+                output_value = value
         values.append(str(output_value))
 
     return ','.join(values)
