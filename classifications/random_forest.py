@@ -10,13 +10,13 @@ class RandomForest:
                  max_depth=None, min_samples_leaf=1, bagging=False,
                  sample_size=1.0):
 
-        self.criterion = criterion                  # Done
-        self.max_features = max_features            # Done
-        self.max_depth = max_depth                  # Done
-        self.min_samples_leaf = min_samples_leaf    # Done
-        self.bagging = bagging
-        self.sample_size = sample_size              # Done
-        self.n_estimators = n_estimators            # Done
+        self.criterion = criterion                  # done
+        self.max_features = max_features            # done
+        self.max_depth = max_depth                  # done
+        self.min_samples_leaf = min_samples_leaf    # done
+        self.bagging = bagging                      # TODO: Please implement me
+        self.sample_size = sample_size              # done
+        self.n_estimators = n_estimators            # done
 
         self._decision_trees = []
 
@@ -75,12 +75,12 @@ class RandomForest:
 
 
 if __name__ == '__main__':
-    forest = RandomForest()
+    forest = RandomForest(n_estimators=1000)
     tree = DecisionTree()
 
     iris = datasets.load_iris()
     # tree.fit(iris.data, iris.target)
     # tree.print_tree()
     forest.fit(iris.data, iris.target)
-    r = forest.predict_proba(iris.data[3])
-    print(r)
+    r = forest.predict_proba(iris.data[19])
+    print('{0:.5}%'.format(r * 100))

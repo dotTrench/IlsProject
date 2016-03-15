@@ -35,10 +35,11 @@ class DecisionTree:
     def __init__(self, criterion='gini', max_features=None, max_depth=None,
                  min_samples_leaf=1):
 
-        self.criterion = criterion
-        self.max_features = max_features
-        self.max_depth = max_depth
-        self.min_samples_leaf = min_samples_leaf
+        self.criterion = criterion                  # done
+        self.max_features = max_features            # done
+        self.max_depth = max_depth                  # done
+        self.min_samples_leaf = min_samples_leaf    # TODO: Implement me
+
         self._root = None
 
     def fit(self, x, y):
@@ -51,6 +52,7 @@ class DecisionTree:
         return self.find(x).value
 
     def find(self, x):
+        """ Finds a node with which classifies input x"""
         if self._root is not None:
             return self._find(self._root, x)
 
@@ -84,15 +86,14 @@ class DecisionTree:
             return self._get_majority_node(y)
 
         # Else perform a split
-        else:
-            split_feature, split_value = self._get_best_split_point(x, y)
-            x1, y1, x2, y2 = self._split(x, y, split_feature, split_value)
+        split_feature, split_value = self._get_best_split_point(x, y)
+        x1, y1, x2, y2 = self._split(x, y, split_feature, split_value)
 
-            n = Node(feature=split_feature, value=split_value)
-            n.left = self._build_tree(x1, y1, depth + 1)
-            n.right = self._build_tree(x2, y2, depth + 1)
+        n = Node(feature=split_feature, value=split_value)
+        n.left = self._build_tree(x1, y1, depth + 1)
+        n.right = self._build_tree(x2, y2, depth + 1)
 
-            return n
+        return n
 
     def _split_value_gini_calc(self, column, value, results):
         """ returns the gini value column is split at value("value") """
