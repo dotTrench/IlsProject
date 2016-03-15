@@ -170,8 +170,8 @@ class DecisionTree():
 
     def _build_tree(self, x, y, depth=0):
         # If depth exceeds max_depth
-        if depth > max_depth:
-            return Node(value=majority_value(y))
+        if depth > self.max_depth:
+            return Node(value=self._majority_value(y))
 
         # If all the values in y are the same
         if self._all_values_are_same(y):
@@ -179,7 +179,7 @@ class DecisionTree():
 
         # If there's no more attributes
         if len(x) <= 0:
-            return Node(value=majority_value(y))
+            return Node(value=self._majority_value(y))
 
         split_feature, split_value = self._get_best_split_point(x, y)
 
@@ -237,7 +237,8 @@ class DecisionTree():
         return len(np.unique(y)) == 1
 
     def _generate_features(self, row):
-        return [i for i in range(0, len(row))]
+        return range(len(row))
+        # return [i for i in range(0, len(row))]
 
     def _get_split_values(self, values):
         values = np.unique(values)
