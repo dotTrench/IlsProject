@@ -16,7 +16,7 @@ class experiment2:
 
     # Fix one param_grid for each algorithm (Er beslutsträd algoritm, er Random Forest-implementering
     # DecisionTreeClassifier, RandomForestClassifier, KNeighborsClassifier
-
+    
     k_range = list(range(1, 100))
     param_grid_knn = dict(n_neighbors=k_range)
 
