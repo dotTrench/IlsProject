@@ -1,9 +1,8 @@
-import numpy as np
 from collections import Counter
+from sklearn import datasets
+import numpy as np
 import math
 import time
-import numpy as np
-from sklearn import datasets
 
 
 class Node:
@@ -22,7 +21,8 @@ class Node:
     def __str__(self, level=0):
         ret = '\t' * level
         if self.is_leaf():
-            ret += 'Leaf:{0}:{1}%'.format(self.value, (self.probability * 100))
+            ret += 'Leaf:{0}:{1:.3g}%'.format(self.value,
+                                              self.probability * 100)
         else:
             ret += 'Feature:{0} Value:{1}\n'.format(self.feature, self.value)
             ret += '\t' * level + 'L: ' + self.left.__str__(level + 1) + '\n'
@@ -42,14 +42,25 @@ class DecisionTree:
 
         self._root = None
 
+    def get_params(self, deep=True):
+        return {
+            'criterion': self.criterion,
+            'max_features': self.max_features
+        }
+
     def fit(self, x, y):
         self._root = self._build_tree(x, y)
 
     def predict_proba(self, x):
-        return self.find(x).probability
+        probabilities = [self.find(i).probability for i in x]
+
+        return probabilities
 
     def predict(self, x):
-        return self.find(x).value
+        results = [self.find(v).value for v in x]
+        print(results)
+
+        return results
 
     def find(self, x):
         """ Finds a node with which classifies input x"""
@@ -147,12 +158,10 @@ class DecisionTree:
 
     def _generate_features(self, row):
         return range(len(row))
-        # return [i for i in range(0, len(row))]
 
     def _get_split_values(self, values):
         values = np.unique(values)
         return (values[:-1] + values[1:]) / 2
-#        return np.array(values[0])
 
     def _get_best_split_point(self, x, y):
         features = self._generate_features(x[0])

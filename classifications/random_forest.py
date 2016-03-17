@@ -1,8 +1,8 @@
 from decisiontree import DecisionTree
 from random import shuffle, randint
-import numpy as np
 from sklearn import datasets
 from collections import Counter
+import numpy as np
 
 
 class RandomForest:
