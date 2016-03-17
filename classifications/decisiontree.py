@@ -45,7 +45,9 @@ class DecisionTree:
     def get_params(self, deep=True):
         return {
             'criterion': self.criterion,
-            'max_features': self.max_features
+            'max_features': self.max_features,
+            'max_depth': self.max_depth,
+            'min_samples_leaf': self.min_samples_leaf
         }
 
     def fit(self, x, y):
@@ -53,13 +55,10 @@ class DecisionTree:
 
     def predict_proba(self, x):
         probabilities = [self.find(i).probability for i in x]
-
         return probabilities
 
     def predict(self, x):
         results = [self.find(v).value for v in x]
-        print(results)
-
         return results
 
     def find(self, x):
@@ -70,10 +69,16 @@ class DecisionTree:
     def _get_majority_node(self, y):
         """ Returns a node with a value of the majority value in y"""
         value, probability = self._majority_value(y)
-
         return Node(value=value, probability=probability)
 
+    def _all_rows_equal(self, x):
+        for i in range(len(x)):
+            if not (x[0]==x[i]).all():
+                return False
+        return True
+
     def _build_tree(self, x, y, depth=0):
+        depth += 1
         # If depth exceeds max_depth
         if self.max_depth is not None and depth > self.max_depth:
             return self._get_majority_node(y)
@@ -81,10 +86,6 @@ class DecisionTree:
         # If all the values in y are the same
         if self._all_values_are_same(y):
             return Node(value=y[0], probability=1)
-
-        # Not sure if this is how it's meant to be done
-        if self._all_values_are_same(x):
-            return self._get_majority_node(y)
 
         num_features = len(x[0])
 
@@ -96,10 +97,24 @@ class DecisionTree:
         if num_features <= 0:
             return self._get_majority_node(y)
 
+        if self._all_rows_equal(x):
+            return self._get_majority_node(y)
+
+        print(depth, len(x))
+        # Not sure if this is how it's meant to be done
+            # return self._get_majority_node(y)
+
         # Else perform a split
         split_feature, split_value = self._get_best_split_point(x, y)
         x1, y1, x2, y2 = self._split(x, y, split_feature, split_value)
-
+        if len(x1) == len(x):
+            print('lol ur fked m80')
+        if len(x2) == len(x):
+            print('fked again')
+        if len(y1) == len(y):
+            print('lol')
+        if len(y2) == len(y):
+            print('kuk')
         n = Node(feature=split_feature, value=split_value)
         n.left = self._build_tree(x1, y1, depth + 1)
         n.right = self._build_tree(x2, y2, depth + 1)
@@ -168,7 +183,6 @@ class DecisionTree:
         best_gini = np.inf
         best_feature = None
         best_value = None
-
         for f in features:
             column = x[:, f]
             split_values = self._get_split_values(column)
