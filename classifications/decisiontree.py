@@ -78,7 +78,7 @@ class DecisionTree:
         return True
 
     def _build_tree(self, x, y, depth=0):
-        depth += 1
+        s = time.time()
         # If depth exceeds max_depth
         if self.max_depth is not None and depth > self.max_depth:
             return self._get_majority_node(y)
@@ -96,25 +96,24 @@ class DecisionTree:
         # If there's no more features
         if num_features <= 0:
             return self._get_majority_node(y)
-
         if self._all_rows_equal(x):
             return self._get_majority_node(y)
 
-        print(depth, len(x))
-        # Not sure if this is how it's meant to be done
-            # return self._get_majority_node(y)
+        e = time.time()
 
-        # Else perform a split
+        print('Base cases: {0} ms'.format((e - s) * 1000))
+
+        s = time.time()
         split_feature, split_value = self._get_best_split_point(x, y)
+        e = time.time()
+        print('Finding split point took: {0} ms'.format((e - s) * 1000))
+
+        s = time.time()
         x1, y1, x2, y2 = self._split(x, y, split_feature, split_value)
-        if len(x1) == len(x):
-            print('lol ur fked m80')
-        if len(x2) == len(x):
-            print('fked again')
-        if len(y1) == len(y):
-            print('lol')
-        if len(y2) == len(y):
-            print('kuk')
+        e = time.time()
+
+        print('Split took {0} ms'.format((e - s) * 1000))
+
         n = Node(feature=split_feature, value=split_value)
         n.left = self._build_tree(x1, y1, depth + 1)
         n.right = self._build_tree(x2, y2, depth + 1)
@@ -125,7 +124,6 @@ class DecisionTree:
         """ returns the gini value column is split at value("value") """
         lt_freq = {}
         ht_freq = {}
-
         for i in range(len(results)):
             result = results[i]
             val = column[i]
@@ -139,7 +137,6 @@ class DecisionTree:
                     lt_freq[result] += 1
                 else:
                     lt_freq[result] = 1
-
         ht_values = list(ht_freq.values())
         lt_values = list(lt_freq.values())
 
@@ -148,6 +145,7 @@ class DecisionTree:
 
         lt_probability = sum(lt_values) / (sum(lt_values) + sum(ht_values))
         ht_probability = sum(ht_values) / (sum(lt_values) + sum(ht_values))
+        e = time.time()
 
         full_gini = lt_gini * lt_probability + ht_gini * ht_probability
         return full_gini
