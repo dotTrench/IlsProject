@@ -1,5 +1,6 @@
 from sklearn import cross_validation, datasets
 from classifications.decisiontree import DecisionTree
+from classifications.random_forest import RandomForest
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from os import listdir, path
@@ -60,17 +61,23 @@ def run_test_on_dataset(dataset):
     # x, y = iris.data, iris.target
     # print(x)
     # print(y)
-    models = [DecisionTreeClassifier(), DecisionTree()]
-    for m in models:
-        scores = cross_validation.cross_val_score(m, x, y, cv=10, scoring='accuracy')
-        print(scores)
-        # accuracy = cross_validation.cross_val_score(m, x, y, cv=10, scoring='accuracy')
-        # print(accuracy)
+    dtc = DecisionTreeClassifier()
+    dt = DecisionTree()
+    rfc = RandomForestClassifier()
+    rf = RandomForest()
 
-        # precision = cross_validation.cross_val_score(m, x, y, cv=10, scoring='precision')
-        # print(precision)
-        print()
-
+    # iris = datasets.load_iris()
+    # x, y = iris.data, iris.target
+    print('Running tests')
+    accuracy = cross_validation.cross_val_score(dt, x, y, cv=3, scoring='accuracy')
+    # precision = cross_validation.cross_val_score(dtc, x, y, cv=3, scoring='precision')
+    # print(precision)
+    print('Done')
+    print(accuracy)
+    return {
+        'accuracy':accuracy,
+        # 'precision': precision
+    }
 
 def main():
     t = Timer()
@@ -78,8 +85,12 @@ def main():
     datasets = read_all_datasets()
     t.stop()
     print(t.get_milliseconds())
-    for d in datasets:
-        run_test_on_dataset(d)
+    # p = Pool()
+    # p.map(run_test_on_dataset, datasets)
+    run_test_on_dataset(datasets[2])
+    # p.close()
+    # p.join()
+
     # # m_datasets = read_all_datasets()
     # t.stop()
     # for dset in m_datasets:
