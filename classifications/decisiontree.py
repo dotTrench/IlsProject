@@ -79,26 +79,30 @@ class DecisionTree:
 
     def _build_tree(self, x, y, depth=0):
         # If depth exceeds max_depth
-        if self.max_depth is not None and depth > self.max_depth:
+        if self.max_depth is not None and depth >= self.max_depth:
             return self._get_majority_node(y)
 
         # If all the values in y are the same
         if self._all_values_are_same(y):
-            return Node(value=y[0], probability=1)
+            return self._get_majority_node(y)
 
         num_features = len(x[0])
 
         # If num_features the max features set in the constructor
-        if self.max_features is not None and num_features > self.max_features:
-            return self._get_majority_node(y)
+        # if self.max_features is not None and num_features > self.max_features:
+        #     return self._get_majority_node(y)
 
-        # If there's no more features
+        # If there are no more features
         if num_features <= 0:
             return self._get_majority_node(y)
+
+        # If all the rows in X are identical
         if self._all_rows_equal(x):
             return self._get_majority_node(y)
 
-        split_feature, split_value = self._get_best_split_point(x, y)
+        split_feature, split_value = self._get_best_split_point_efficent(x, y)
+        if split_feature is None:
+            return self._get_majority_node(y)
 
         x1, y1, x2, y2 = self._split(x, y, split_feature, split_value)
 
@@ -125,6 +129,7 @@ class DecisionTree:
                     lt_freq[result] += 1
                 else:
                     lt_freq[result] = 1
+
         ht_values = list(ht_freq.values())
         lt_values = list(lt_freq.values())
 
@@ -133,7 +138,6 @@ class DecisionTree:
 
         lt_probability = sum(lt_values) / (sum(lt_values) + sum(ht_values))
         ht_probability = sum(ht_values) / (sum(lt_values) + sum(ht_values))
-        e = time.time()
 
         full_gini = lt_gini * lt_probability + ht_gini * ht_probability
         return full_gini
@@ -164,6 +168,62 @@ class DecisionTree:
         values = np.unique(values)
         return (values[:-1] + values[1:]) / 2
 
+    def _get_best_split_point_efficent(self, x, y):
+        features = self._generate_features(x[0])
+        if self.max_features is not None and len(features) > self.max_features:
+            features = range(self.max_features)
+
+        best_gini = np.inf
+        best_feature = None
+        best_value = None
+        for f in features:
+            column = x[:, f]
+            # print(column)
+            split_values = self._get_split_values(column)
+
+            ht_result = y
+            lt_freq = {}
+            s = time.time()
+            for v in split_values:
+                gini, lt_freq, column, ht_result = self._split_value_gini_calc_efficent(column, v, ht_result, lt_freq)
+                if gini < best_gini:
+                    best_gini, best_feature, best_value = gini, f, v
+            e = time.time()
+        return best_feature, best_value
+
+    def _split_value_gini_calc_efficent(self, column, value, results, lt_freq={}):
+        """ returns the gini value column is split at value("value") """
+        ht_freq = {}
+
+        ht_column = []
+        ht_result = []
+        for i in range(len(results)):
+            result = results[i]
+            val = column[i]
+            if val > value:
+                ht_column.append(val)
+                ht_result.append(result)
+                if result in ht_freq:
+                    ht_freq[result] += 1
+                else:
+                    ht_freq[result] = 1
+            else:
+                if result in lt_freq:
+                    lt_freq[result] += 1
+                else:
+                    lt_freq[result] = 1
+
+        ht_values = list(ht_freq.values())
+        lt_values = list(lt_freq.values())
+        ht_gini = self._gini(ht_values)
+        lt_gini = self._gini(lt_values)
+
+        lt_probability = sum(lt_values) / (sum(lt_values) + sum(ht_values))
+        ht_probability = sum(ht_values) / (sum(lt_values) + sum(ht_values))
+
+        full_gini = lt_gini * lt_probability + ht_gini * ht_probability
+        return full_gini, lt_freq, np.array(ht_column), np.array(ht_result)
+
     def _get_best_split_point(self, x, y):
         features = self._generate_features(x[0])
         best_gini = np.inf
@@ -172,6 +232,7 @@ class DecisionTree:
         for f in features:
             column = x[:, f]
             split_values = self._get_split_values(column)
+
             for v in split_values:
                 gini = self._split_value_gini_calc(column, v, y)
                 if gini < best_gini:
@@ -186,7 +247,6 @@ class DecisionTree:
 
         lt_x = []
         lt_y = []
-
         for i in range(len(col)):
             val = col[i]
             if val > value:
@@ -196,10 +256,10 @@ class DecisionTree:
                 lt_x.append(x[i])
                 lt_y.append(y[i])
 
-        if len(ht_x) > 0:
-            ht_x = np.delete(ht_x, feature, 1)
-        if len(lt_x) > 0:
-            lt_x = np.delete(lt_x, feature, 1)
+        # if len(ht_x) > 0:
+        #     ht_x = np.delete(ht_x, feature, 1)
+        # if len(lt_x) > 0:
+        #     lt_x = np.delete(lt_x, feature, 1)
 
         return np.array(ht_x), np.array(ht_y), np.array(lt_x), np.array(lt_y)
 
@@ -209,8 +269,6 @@ class DecisionTree:
 
         f = node.feature
         val = x[f]
-        x = np.delete(x, f, 0)
-
         if val <= node.value:
             return self._find(node.left, x)
         else:

@@ -9,6 +9,7 @@ from multiprocessing.dummy import Pool
 from collections import Counter
 import numpy as np
 import time
+from pprint import pprint
 
 
 class Timer:
@@ -33,19 +34,19 @@ def read_all_datasets():
     multi_files = [path.join('dataset/multi', file) for file in listdir('dataset/multi')]
     bin_files = [path.join('dataset/binary', file) for file in listdir('dataset/binary')]
     all_files = bin_files + multi_files
-
+    print(multi_files)
     csv_files = [read_csv(f) for f in multi_files]
     # csv_files = [read_csv(f) for f in bin_files]
     return csv_files
 
 
 def run_test_on_dataset(dataset):
+    print(dataset)
     cv = cross_validation.KFold(n=10, n_folds=10)
     attributes = dataset.columns[:-1]
     d_class = dataset.columns[-1]
     # print(d_class)
     features = dataset[list(attributes)]
-
     # print(features)
     x = np.array(features.values)
     y = np.array(dataset[d_class].values)
@@ -54,23 +55,43 @@ def run_test_on_dataset(dataset):
     dt = DecisionTree()
     rfc = RandomForestClassifier()
     rf = RandomForest()
-    t = Timer()
+    models = [('dtc', dtc), ('dt', dt), ('rf', rf), ('rfc', rfc)]
     print('Running tests')
-    t.start()
-    accuracy = cross_validation.cross_val_score(dt, x, y, cv=10, scoring='accuracy')
-    precision = cross_validation.cross_val_score(dt, x, y, cv=10, scoring='precision_weighted')
+    results = []
+    for name, m in models:
+        print('Testing model: {0}'.format(name))
+        t = Timer()
+        t.start()
+        print('recall', name)
+        recall = cross_validation.cross_val_score(m, x, y, cv=10,
+                                                  scoring='recall_weighted')
+        # auc = cross_validation.cross_val_score(m, x, y, cv=10,
+        #                                        scoring='roc_auc')
 
-    t.stop()
+        print('accuracy', name)
+        accuracy = cross_validation.cross_val_score(m, x, y, cv=10,
+                                                    scoring='accuracy')
+        print('precision', name)
+        precision = cross_validation.cross_val_score(m, x, y, cv=10,
+                                                     scoring='precision_weighted')
+        t.stop()
+        result = {
+            'recall': recall,
+            # 'auc': auc,
+            'accuracy': accuracy,
+            'precision': precision,
+            'timer': t.get_milliseconds(),
+            'model': name
+        }
+        print(result)
+        results.append(result)
 
-    print(t.get_milliseconds())
+        print('model: {0} done in {1:.5f}ms'.format(name, t.get_milliseconds()))
+
+    print(results)
     # print(precision)
-    print('Done')
-    print(precision)
-    print(accuracy)
-    return {
-        'accuracy':accuracy,
-        'precision': precision
-    }
+    return results
+
 
 def main():
     t = Timer()
@@ -80,7 +101,7 @@ def main():
     print(t.get_milliseconds())
     # p = Pool()
     # p.map(run_test_on_dataset, datasets)
-    run_test_on_dataset(datasets[2])
+    run_test_on_dataset(datasets[1])
     # p.close()
     # p.join()
 

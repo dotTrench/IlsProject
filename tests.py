@@ -65,7 +65,7 @@ class DecisionTreeTests(unittest.TestCase):
             [7.6, 3.0, 6.6, 2.1]])
         y = np.array([0, 0, 1, 2])
 
-        a, v = t._get_best_split_point(x, y)
+        a, v = t._get_best_split_point_efficent(x, y)
 
         self.assertEqual(a, 0)
         self.assertEqual(v, 5.75)
@@ -125,7 +125,7 @@ class DecisionTreeTests(unittest.TestCase):
 
         t = DecisionTree()
         t.fit(x, y)
-        t.predict([4.9, 3.0, 1.4, 0.2])
+        t.predict([[4.9, 3.0, 1.4, 0.2]])
 
 if __name__ == '__main__':
     unittest.main()
