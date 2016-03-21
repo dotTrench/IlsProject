@@ -1,4 +1,4 @@
-from decisiontree import DecisionTree
+from classifications.decisiontree import DecisionTree
 from random import shuffle, randint
 from sklearn import datasets
 from collections import Counter
@@ -20,6 +20,11 @@ class RandomForest:
 
         self._decision_trees = []
 
+    def get_params(self, deep=True):
+        return {
+            'criterion': self.criterion,
+            'max_features': self.max_features
+        }
     def fit(self, x, y):
         subsets_x, subsets_y = self._create_random_subsets(x, y)
 
@@ -33,11 +38,13 @@ class RandomForest:
             self._decision_trees.append(tree)
 
     def predict(self, x):
-        results = [t.predict(x) for t in self._decision_trees]
-        c = Counter(results)
-        val, _ = c.most_common(1)[0]
-
-        return val
+        result = []
+        for i in x:
+            results = [t.predict(i) for t in self._decision_trees]
+            c = Counter(results)
+            val, _ = c.most_common(1)[0]
+            result.append(val)
+        return result
 
     def predict_proba(self, x):
         nodes = [t.find(x) for t in self._decision_trees]

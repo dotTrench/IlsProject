@@ -49,34 +49,27 @@ def run_test_on_dataset(dataset):
     # print(features)
     x = np.array(features.values)
     y = np.array(dataset[d_class].values)
-    labels = np.unique(y)
-    # print(x)
-    # print(y)
 
-    # y = dataset.values[:, -1]
-    # x = dataset.values[:, :-1]
-    # print(x)
-    # print(y)
-    # iris = datasets.load_iris()
-    # x, y = iris.data, iris.target
-    # print(x)
-    # print(y)
     dtc = DecisionTreeClassifier()
     dt = DecisionTree()
     rfc = RandomForestClassifier()
     rf = RandomForest()
-
-    # iris = datasets.load_iris()
-    # x, y = iris.data, iris.target
+    t = Timer()
     print('Running tests')
-    accuracy = cross_validation.cross_val_score(dt, x, y, cv=3, scoring='accuracy')
-    # precision = cross_validation.cross_val_score(dtc, x, y, cv=3, scoring='precision')
+    t.start()
+    accuracy = cross_validation.cross_val_score(dt, x, y, cv=10, scoring='accuracy')
+    precision = cross_validation.cross_val_score(dt, x, y, cv=10, scoring='precision_weighted')
+
+    t.stop()
+
+    print(t.get_milliseconds())
     # print(precision)
     print('Done')
+    print(precision)
     print(accuracy)
     return {
         'accuracy':accuracy,
-        # 'precision': precision
+        'precision': precision
     }
 
 def main():

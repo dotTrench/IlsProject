@@ -78,7 +78,6 @@ class DecisionTree:
         return True
 
     def _build_tree(self, x, y, depth=0):
-        s = time.time()
         # If depth exceeds max_depth
         if self.max_depth is not None and depth > self.max_depth:
             return self._get_majority_node(y)
@@ -99,20 +98,9 @@ class DecisionTree:
         if self._all_rows_equal(x):
             return self._get_majority_node(y)
 
-        e = time.time()
-
-        print('Base cases: {0} ms'.format((e - s) * 1000))
-
-        s = time.time()
         split_feature, split_value = self._get_best_split_point(x, y)
-        e = time.time()
-        print('Finding split point took: {0} ms'.format((e - s) * 1000))
 
-        s = time.time()
         x1, y1, x2, y2 = self._split(x, y, split_feature, split_value)
-        e = time.time()
-
-        print('Split took {0} ms'.format((e - s) * 1000))
 
         n = Node(feature=split_feature, value=split_value)
         n.left = self._build_tree(x1, y1, depth + 1)
