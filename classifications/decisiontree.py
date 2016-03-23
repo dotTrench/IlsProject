@@ -50,6 +50,14 @@ class DecisionTree:
             'min_samples_leaf': self.min_samples_leaf
         }
 
+    def set_params(self, criterion='gini', max_features=None, max_depth=None, min_samples_leaf=1):
+        self.criterion = criterion
+        self.max_features = max_features
+        self.max_depth = max_depth
+        self.min_samples_leaf = min_samples_leaf
+
+        return self
+
     def fit(self, x, y):
         self._root = self._build_tree(x, y)
 
@@ -73,7 +81,7 @@ class DecisionTree:
 
     def _all_rows_equal(self, x):
         for i in range(len(x)):
-            if not (x[0]==x[i]).all():
+            if not (x[0] == x[i]).all():
                 return False
         return True
 
@@ -87,10 +95,6 @@ class DecisionTree:
             return self._get_majority_node(y)
 
         num_features = len(x[0])
-
-        # If num_features the max features set in the constructor
-        # if self.max_features is not None and num_features > self.max_features:
-        #     return self._get_majority_node(y)
 
         # If there are no more features
         if num_features <= 0:

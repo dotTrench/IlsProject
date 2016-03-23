@@ -1,4 +1,5 @@
 import json
+import math
 
 
 def word_count_convert(value):
@@ -6,15 +7,60 @@ def word_count_convert(value):
 
 
 def test_converter(values):
-    print(values)
+    # print(values)
     return -1
 
 
+def flair_converter(flair):
+    if not flair:
+        return 0
+    elif flair == "shroom":
+        return 1
+    else:
+        return 2
+
+
+# Every day is rounded up
+def x_per_day_converter(values):
+    # If the user has no posts/comments/votes, return 0 posts/comments/votes per day
+    if values[1] == 0:
+        return 0
+
+    if values[0] == 0:
+        values[0] = 1
+
+    return math.ceil(values[0]) / values[1]
+
+
+# Every day is rounded up
+def requester_activity_converter(values):
+    age = values[0]
+    comments = values[1]
+    posts = values[2]
+
+    # If zero activity return 0
+    if posts + comments == 0:
+        return 0
+
+    if age == 0:
+        age = 1
+
+    return age / (posts + comments)
+
+
+def count_words_converter(value):
+    return len(value.split())
+
 fields = [
     {
-        'input': ['requester_account_age_in_days_at_request', 'request_title'],
-        'converter': test_converter,
-        'output': 'lol'
+        'input': 'requester_user_flair',
+        'converter': flair_converter,
+        'output': 'requester_flair'
+    },
+    {
+        'input': 'request_title',
+        'converter': count_words_converter,
+        'output': 'request_title_nr_of_words'
     },
     {
         'input': 'requester_account_age_in_days_at_request',
@@ -59,32 +105,36 @@ fields = [
         'converter': word_count_convert,
         'output': 'requester_username_length'
     },
+    # Combined features start here!
     {
-        'input': ['requester_account_age_in_days_at_request',
-                  'requester_number_of_posts_at_request'],
-        'output': 'post_per_day_at_request'
+        'input': ['requester_account_age_in_days_at_request', 'requester_number_of_posts_at_request'],
+        'converter': x_per_day_converter,
+        'output': 'posts_per_day_at_request'
     },
     {
         'input': ['requester_account_age_in_days_at_request',
                   'requester_number_of_comments_at_request'],
+        'converter': x_per_day_converter,
         'output': 'comments_per_day_at_request'
     },
     {
         'input': ['requester_account_age_in_days_at_request',
-                  'requester_number_of_comments_on_raop_at_request',
-                  'requester_num_of_posts_on_roap_at_request'],
+                  'requester_number_of_comments_in_raop_at_request',
+                  'requester_number_of_posts_on_raop_at_request'],
+        'converter': requester_activity_converter,
         'output': 'requester_activity_on_raop'
     },
     {
         'input': ['requester_account_age_in_days_at_request',
-                  'requester_number_of_post_at_request',
-                  'requester_number_of_comments_at_request',
-                  'requester_number_of_subreddits_at_request'],
+                  'requester_number_of_posts_at_request',
+                  'requester_number_of_comments_at_request'],
+        'converter': requester_activity_converter,
         'output': 'requester_activity_on_reddit'
     },
     {
         'input': ['requester_account_age_in_days_at_request',
                   'requester_upvotes_minus_downvotes_at_request'],
+        'converter': x_per_day_converter,
         'output': 'upvotes_minus_downvotes_per_day'
     },
     # This has to be the last field since it's the class column!
@@ -108,16 +158,15 @@ def convert_entry_to_row(entry):
         input_field = field['input']
         if type(input_field) is list:
             input_values = [entry[i] for i in input_field]
-
             output_value = field['converter'](input_values)
         else:
-            value = entry[input_field]
+            input_value = entry[input_field]
 
             output_value = None
             if 'converter' in field:
-                output_value = field['converter'](value)
+                output_value = field['converter'](input_value)
             else:
-                output_value = value
+                output_value = input_value
         values.append(str(output_value))
 
     return ','.join(values)

@@ -22,9 +22,26 @@ class RandomForest:
 
     def get_params(self, deep=True):
         return {
+            'n_estimators': self.n_estimators,
             'criterion': self.criterion,
-            'max_features': self.max_features
+            'max_features': self.max_features,
+            'max_depth': self.max_depth,
+            'min_samples_leaf': self.min_samples_leaf,
+            'bagging': self.bagging,
+            'sample_size': self.sample_size
         }
+
+    def set_params(self, n_estimators=10, criterion='gini', max_features=None, max_depth=None, min_samples_leaf=1,
+                   bagging=False, sample_size=1.0):
+        self.criterion = criterion
+        self.max_features = max_features
+        self.min_samples_leaf = min_samples_leaf
+        self.max_depth = max_depth
+        self.bagging = bagging
+        self.sample_size = sample_size
+        self.n_estimators = n_estimators
+        return self
+
     def fit(self, x, y):
         subsets_x, subsets_y = self._create_random_subsets(x, y)
 
