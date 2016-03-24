@@ -1,0 +1,9 @@
+scikit:
+    * modifierad version av CART algoritm
+    * C bindings
+    * Presorting http://scikit-learn.org/stable/modules/tree.html #1.10.4
+    * Varje nod sparar en class, gini, samples och values?
+    * Hanterar även "icke-continous" värden, categorical, categorical
+vårt:
+    * Modifierad version av Hunt's algoritm
+    * naiv, måste beräkna gainen vid varje splitt

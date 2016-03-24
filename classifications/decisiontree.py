@@ -107,6 +107,9 @@ class DecisionTree:
         if self._all_rows_equal(x):
             return self._get_majority_node(y)
 
+        if len(x) <= self.min_samples_leaf:
+            return self._get_majority_node(y)
+
         split_feature, split_value, g = self._get_best_split_point_efficent(x, y)
         if split_feature is None:
             return self._get_majority_node(y)

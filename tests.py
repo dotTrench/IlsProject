@@ -125,7 +125,7 @@ class DecisionTreeTests(unittest.TestCase):
 
         t = DecisionTree()
         t.fit(x, y)
-        t.predict([[4.9, 3.0, 1.4, 0.2]])
+        t.predict(np.array([[4.9, 3.0, 1.4, 0.2]]))
 
 if __name__ == '__main__':
     unittest.main()
