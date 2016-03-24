@@ -35,27 +35,25 @@ def read_all_datasets():
     bin_files = [path.join('dataset/binary', file) for file in listdir('dataset/binary')]
     all_files = bin_files + multi_files
     print(multi_files)
-    csv_files = [read_csv(f) for f in multi_files]
+    csv_files = [read_csv(f, header=None) for f in multi_files]
     # csv_files = [read_csv(f) for f in bin_files]
     return csv_files
 
 
 def run_test_on_dataset(dataset):
-    print(dataset)
-    cv = cross_validation.KFold(n=10, n_folds=10)
     attributes = dataset.columns[:-1]
     d_class = dataset.columns[-1]
-    # print(d_class)
+
     features = dataset[list(attributes)]
-    # print(features)
     x = np.array(features.values)
     y = np.array(dataset[d_class].values)
 
     dtc = DecisionTreeClassifier()
-    dt = DecisionTree()
-    rfc = RandomForestClassifier()
+    dt = DecisionTree(max_features=10, max_depth=3)
+    rfc = RandomForestClassifier(max_features=10)
     rf = RandomForest()
-    models = [('dtc', dtc), ('dt', dt), ('rf', rf), ('rfc', rfc)]
+
+    models = [('rfc', rfc), ('dtc', dtc), ('dt', dt), ('rf', rf)]
     print('Running tests')
     results = []
     for name, m in models:
@@ -72,28 +70,28 @@ def run_test_on_dataset(dataset):
         accuracy = cross_validation.cross_val_score(m, x, y, cv=10,
                                                     scoring='accuracy')
         print('precision', name)
-        precision = cross_validation.cross_val_score(m, x, y, cv=10,
-                                                     scoring='precision_weighted')
+        prec = cross_validation.cross_val_score(m, x, y, cv=10,
+                                                scoring='precision_weighted')
         t.stop()
         result = {
             'recall': recall,
             # 'auc': auc,
             'accuracy': accuracy,
-            'precision': precision,
-            'timer': t.get_milliseconds(),
+            'precision': prec,
+            'time': t.get_milliseconds(),
             'model': name
         }
         print(result)
         results.append(result)
-
         print('model: {0} done in {1:.5f}ms'.format(name, t.get_milliseconds()))
 
-    print(results)
+    # print(results)
     # print(precision)
     return results
 
 
 def main():
+    from pprint import pprint
     t = Timer()
     t.start()
     datasets = read_all_datasets()
@@ -101,7 +99,8 @@ def main():
     print(t.get_milliseconds())
     # p = Pool()
     # p.map(run_test_on_dataset, datasets)
-    run_test_on_dataset(datasets[1])
+    results = run_test_on_dataset(datasets[1])
+    pprint(results)
     # p.close()
     # p.join()
 

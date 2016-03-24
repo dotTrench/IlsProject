@@ -25,6 +25,7 @@ class RandomForest:
             'criterion': self.criterion,
             'max_features': self.max_features
         }
+
     def fit(self, x, y):
         subsets_x, subsets_y = self._create_random_subsets(x, y)
 
@@ -34,6 +35,7 @@ class RandomForest:
                                 max_depth=self.max_depth,
                                 min_samples_leaf=self.min_samples_leaf)
 
+            print(i, self.n_estimators)
             tree.fit(subsets_x[i], subsets_y[i])
             self._decision_trees.append(tree)
 
