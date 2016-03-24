@@ -1,5 +1,4 @@
 from collections import Counter
-from sklearn import datasets
 import numpy as np
 import math
 import time
@@ -66,7 +65,11 @@ class DecisionTree:
         return probabilities
 
     def predict(self, x):
-        results = [self.find(v).value for v in x]
+        if len(x.shape) > 1:
+            results = [self.find(v).value for v in x]
+        else:
+            results = self.find(x).value
+
         return results
 
     def find(self, x):
@@ -104,7 +107,7 @@ class DecisionTree:
         if self._all_rows_equal(x):
             return self._get_majority_node(y)
 
-        split_feature, split_value = self._get_best_split_point_efficent(x, y)
+        split_feature, split_value, g = self._get_best_split_point_efficent(x, y)
         if split_feature is None:
             return self._get_majority_node(y)
 
@@ -113,7 +116,6 @@ class DecisionTree:
         n = Node(feature=split_feature, value=split_value)
         n.left = self._build_tree(x1, y1, depth + 1)
         n.right = self._build_tree(x2, y2, depth + 1)
-
         return n
 
     def _split_value_gini_calc(self, column, value, results):
@@ -182,7 +184,6 @@ class DecisionTree:
         best_value = None
         for f in features:
             column = x[:, f]
-            # print(column)
             split_values = self._get_split_values(column)
 
             ht_result = y
@@ -193,7 +194,7 @@ class DecisionTree:
                 if gini < best_gini:
                     best_gini, best_feature, best_value = gini, f, v
             e = time.time()
-        return best_feature, best_value
+        return best_feature, best_value, best_gini
 
     def _split_value_gini_calc_efficent(self, column, value, results, lt_freq={}):
         """ returns the gini value column is split at value("value") """
@@ -228,22 +229,6 @@ class DecisionTree:
         full_gini = lt_gini * lt_probability + ht_gini * ht_probability
         return full_gini, lt_freq, np.array(ht_column), np.array(ht_result)
 
-    def _get_best_split_point(self, x, y):
-        features = self._generate_features(x[0])
-        best_gini = np.inf
-        best_feature = None
-        best_value = None
-        for f in features:
-            column = x[:, f]
-            split_values = self._get_split_values(column)
-
-            for v in split_values:
-                gini = self._split_value_gini_calc(column, v, y)
-                if gini < best_gini:
-                    best_gini, best_feature, best_value = gini, f, v
-
-        return best_feature, best_value
-
     def _split(self, x, y, feature, value):
         col = x[:, feature]
         ht_x = []
@@ -259,11 +244,6 @@ class DecisionTree:
             else:
                 lt_x.append(x[i])
                 lt_y.append(y[i])
-
-        # if len(ht_x) > 0:
-        #     ht_x = np.delete(ht_x, feature, 1)
-        # if len(lt_x) > 0:
-        #     lt_x = np.delete(lt_x, feature, 1)
 
         return np.array(ht_x), np.array(ht_y), np.array(lt_x), np.array(lt_y)
 
