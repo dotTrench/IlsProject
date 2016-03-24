@@ -40,7 +40,7 @@ class RandomForest:
                                 max_depth=self.max_depth,
                                 min_samples_leaf=self.min_samples_leaf)
 
-            print(i, self.n_estimators)
+            # print(i, self.n_estimators)
             tree.fit(subsets_x[i], subsets_y[i])
             self._decision_trees.append(tree)
 

@@ -50,7 +50,6 @@ def experiment2(dataset):
     # Fix one param_grid for each algorithm (Er beslutsträd algoritm, er Random Forest-implementering
     # DecisionTreeClassifier, RandomForestClassifier, KNeighborsClassifier
     # Create params for all the algorithms with the parameters that should be optimised
-    print(len(x[1]))
     max_features = list(range(1, len(x[0])))
     max_depth = list(range(1, len(x[0])))
     n_estimators = list(range(1, 50))
