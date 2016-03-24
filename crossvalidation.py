@@ -49,7 +49,7 @@ def run_test_on_dataset(dataset):
     y = np.array(dataset[d_class].values)
 
     dtc = DecisionTreeClassifier()
-    dt = DecisionTree(max_features=10, max_depth=3)
+    dt = DecisionTree(max_features=10, max_depth=3, min_samples_leaf=500)
     rfc = RandomForestClassifier(max_features=10)
     rf = RandomForest()
 
@@ -85,8 +85,6 @@ def run_test_on_dataset(dataset):
         results.append(result)
         print('model: {0} done in {1:.5f}ms'.format(name, t.get_milliseconds()))
 
-    # print(results)
-    # print(precision)
     return results
 
 
@@ -101,46 +99,9 @@ def main():
     # p.map(run_test_on_dataset, datasets)
     results = run_test_on_dataset(datasets[1])
     pprint(results)
-    # p.close()
-    # p.join()
+    p.close()
+    p.join()
 
-    # # m_datasets = read_all_datasets()
-    # t.stop()
-    # for dset in m_datasets:
-    #     y = dset['data'].values
-    #     print(y)
-    #     break
-    # y = [dataset['data'] .values[:, -1] for dataset in m_datasets]
-    # print(y[13])
-
-    # cv = cross_validation.KFold(n=3, n_folds=3)
-
-    # iris = datasets.load_iris()
-    # x, y = iris.data, iris.target
-
-    # model = DecisionTree()
-    # model2 = DecisionTreeClassifier()
-
-    # classifiers = [{'classifier': model, 'name': 'DecisionTree'},
-    #                {'classifier': model2, 'name': 'DecisionTreeClassifier'}]
-    # scorings = ['recall', 'accuracy', 'precision', 'roc_auc']
-
-    # scores = []
-
-    # for c in classifiers:
-    #     for dataset in m_datasets:
-    #         recall = cross_validation.cross_val_score(c['classifier'], x, y, cv=cv,
-    #                                                   scoring='recall')
-    #         accuracy = cross_validation.cross_val_score(c['classifier'], x, y, cv=cv,
-    #                                                     scoring='accuracy')
-    #         precision = cross_validation.cross_val_score(c['classifier'], x, y, cv=cv,
-    #                                                      scoring='precision')
-    #         scores.append({
-    #             'classifier_name': c['name'],
-    #             'recall': recall,
-    #             'accuracy': accuracy,
-    #             'precision': precision
-    #             })
 
 if __name__ == '__main__':
     main()
