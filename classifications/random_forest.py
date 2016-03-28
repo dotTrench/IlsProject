@@ -22,8 +22,13 @@ class RandomForest:
 
     def get_params(self, deep=True):
         return {
+            'n_estimators': self.n_estimators,
             'criterion': self.criterion,
-            'max_features': self.max_features
+            'max_features': self.max_features,
+            'max_depth': self.max_depth,
+            'min_samples_leaf': self.min_samples_leaf,
+            'bagging': self.bagging,
+            'sample_size': self.sample_size
         }
 
     def fit(self, x, y):
@@ -35,7 +40,7 @@ class RandomForest:
                                 max_depth=self.max_depth,
                                 min_samples_leaf=self.min_samples_leaf)
 
-            print(i, self.n_estimators)
+            # print(i, self.n_estimators)
             tree.fit(subsets_x[i], subsets_y[i])
             self._decision_trees.append(tree)
 

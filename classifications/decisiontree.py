@@ -49,6 +49,14 @@ class DecisionTree:
             'min_samples_leaf': self.min_samples_leaf
         }
 
+    def set_params(self, criterion='gini', max_features=None, max_depth=None, min_samples_leaf=1):
+        self.criterion = criterion
+        self.max_features = max_features
+        self.max_depth = max_depth
+        self.min_samples_leaf = min_samples_leaf
+
+        return self
+
     def fit(self, x, y):
         self._root = self._build_tree(x, y)
 
