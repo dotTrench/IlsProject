@@ -35,12 +35,15 @@ def read_all_datasets():
     bin_files = [path.join('dataset/binary', file) for file in listdir('dataset/binary')]
     all_files = bin_files + multi_files
     print(multi_files)
-    csv_files = [read_csv(f, header=None) for f in multi_files]
+    csv_files = [(read_csv(f, header=None), f) for f in multi_files]
     # csv_files = [read_csv(f) for f in bin_files]
     return csv_files
 
 
 def run_test_on_dataset(dataset):
+    filename = dataset[1]
+    dataset = dataset[0]
+
     attributes = dataset.columns[:-1]
     d_class = dataset.columns[-1]
 
@@ -52,7 +55,7 @@ def run_test_on_dataset(dataset):
     rfc = RandomForestClassifier(n_estimators=25, max_features=len(x[0]), max_depth=18)
     rf = RandomForest(n_estimators=25, max_features=len(x[0]), max_depth=18)
 
-    models = [('dt', dt)]
+    models = [('dtc', dtc)]
     print('Running tests')
     results = []
     for name, m in models:
@@ -78,7 +81,8 @@ def run_test_on_dataset(dataset):
             'accuracy': accuracy,
             'precision': prec,
             'time': t.get_milliseconds(),
-            'model': name
+            'model': name,
+            'dataset_name': filename
         }
         print(result)
         results.append(result)
@@ -94,12 +98,11 @@ def main():
     datasets = read_all_datasets()
     t.stop()
     print(t.get_milliseconds())
-    # p = Pool()
-    # results = p.map(run_test_on_dataset, datasets)
-    results = run_test_on_dataset(datasets[0])
-    print(results)
-    # p.close()
-    # p.join()
+    p = Pool()
+    results = p.map(run_test_on_dataset, datasets)
+    # results = run_test_on_dataset(datasets[0])
+    p.close()
+    p.join()
 
     pprint(results)
 
