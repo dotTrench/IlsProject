@@ -65,7 +65,7 @@ class DecisionTreeTests(unittest.TestCase):
             [7.6, 3.0, 6.6, 2.1]])
         y = np.array([0, 0, 1, 2])
 
-        a, v = t._get_best_split_point_efficent(x, y)
+        a, v = t._get_best_split_point(x, y)
 
         self.assertEqual(a, 0)
         self.assertEqual(v, 5.75)
@@ -82,8 +82,8 @@ class DecisionTreeTests(unittest.TestCase):
         ht_x, ht_y, lt_x, lt_y = t._split(x, y, 0, 5.75)
 
         ht_x_expected = np.array([
-            [2.9, 4.3, 1.3],
-            [3.0, 6.6, 2.1]
+            [6.4, 2.9, 4.3, 1.3],
+            [7.6, 3.0, 6.6, 2.1]
         ])
         ht_y_expected = np.array([1, 2])
 
@@ -91,8 +91,8 @@ class DecisionTreeTests(unittest.TestCase):
         np.testing.assert_allclose(ht_y_expected, ht_y)
 
         lt_x_expected = np.array([
-            [3.5, 1.4, 0.2],
-            [3.0, 1.4, 0.2]
+            [5.1, 3.5, 1.4, 0.2],
+            [4.9, 3.0, 1.4, 0.2]
         ])
 
         lt_y_expected = np.array([0, 0])

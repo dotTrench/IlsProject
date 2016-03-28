@@ -102,7 +102,8 @@ class DecisionTree:
         if len(x) <= self.min_samples_leaf:
             return self._get_majority_node(y)
 
-        split_feature, split_value, g = self._get_best_split_point_efficent(x, y)
+        split_feature, split_value = self._get_best_split_point(x, y)
+
         if split_feature is None:
             return self._get_majority_node(y)
 
@@ -117,9 +118,7 @@ class DecisionTree:
         """ returns the gini value column is split at value("value") """
         lt_freq = {}
         ht_freq = {}
-        for i in range(len(results)):
-            result = results[i]
-            val = column[i]
+        for val, result in zip(column, results):
             if val > value:
                 if result in ht_freq:
                     ht_freq[result] += 1
@@ -169,7 +168,7 @@ class DecisionTree:
         values = np.unique(values)
         return (values[:-1] + values[1:]) / 2
 
-    def _get_best_split_point_efficent(self, x, y):
+    def _get_best_split_point(self, x, y):
         features = self._generate_features(x[0])
         if self.max_features is not None and len(features) > self.max_features:
             features = range(self.max_features)
@@ -181,25 +180,22 @@ class DecisionTree:
             column = x[:, f]
             split_values = self._get_split_values(column)
 
-            ht_result = y
-            lt_freq = {}
             s = time.time()
             for v in split_values:
-                gini, lt_freq, column, ht_result = self._split_value_gini_calc_efficent(column, v, ht_result, lt_freq)
+                gini = self._split_value_gini_calc_efficent(column, v, y)
                 if gini < best_gini:
                     best_gini, best_feature, best_value = gini, f, v
             e = time.time()
-        return best_feature, best_value, best_gini
+        return best_feature, best_value
 
-    def _split_value_gini_calc_efficent(self, column, value, results, lt_freq={}):
+    def _split_value_gini_calc_efficent(self, column, value, results):
         """ returns the gini value column is split at value("value") """
         ht_freq = {}
-
+        lt_freq = {}
         ht_column = []
         ht_result = []
-        for i in range(len(results)):
-            result = results[i]
-            val = column[i]
+
+        for val, result in zip(column, results):
             if val > value:
                 ht_column.append(val)
                 ht_result.append(result)
@@ -222,7 +218,7 @@ class DecisionTree:
         ht_probability = sum(ht_values) / (sum(lt_values) + sum(ht_values))
 
         full_gini = lt_gini * lt_probability + ht_gini * ht_probability
-        return full_gini, lt_freq, np.array(ht_column), np.array(ht_result)
+        return full_gini
 
     def _split(self, x, y, feature, value):
         col = x[:, feature]
