@@ -2,6 +2,8 @@ from collections import Counter
 import numpy as np
 import math
 import time
+import operator
+import bisect
 
 
 class Node:
@@ -89,6 +91,7 @@ class DecisionTree:
         return True
 
     def _build_tree(self, x, y, depth=0):
+
         # If depth exceeds max_depth
         if self.max_depth is not None and depth >= self.max_depth:
             return self._get_majority_node(y)
@@ -110,7 +113,7 @@ class DecisionTree:
         if len(x) <= self.min_samples_leaf:
             return self._get_majority_node(y)
 
-        split_feature, split_value, g = self._get_best_split_point_efficent(x, y)
+        split_feature, split_value = self._get_best_split_point_efficent(x, y)
         if split_feature is None:
             return self._get_majority_node(y)
 
@@ -122,7 +125,6 @@ class DecisionTree:
         return n
 
     def _split_value_gini_calc(self, column, value, results):
-        """ returns the gini value column is split at value("value") """
         lt_freq = {}
         ht_freq = {}
         for i in range(len(results)):
@@ -153,6 +155,11 @@ class DecisionTree:
 
     def _gini(self, subset):
         val = 0
+
+        if sum(subset) == 0:
+            print("ZEROZERO BAD!")
+            return 0
+
         for res in subset:
             val += (res / sum(subset))**2
         return 1 - val
@@ -187,25 +194,140 @@ class DecisionTree:
         best_value = None
         for f in features:
             column = x[:, f]
-            split_values = self._get_split_values(column)
 
-            ht_result = y
-            lt_freq = {}
             s = time.time()
-            for v in split_values:
-                gini, lt_freq, column, ht_result = self._split_value_gini_calc_efficent(column, v, ht_result, lt_freq)
-                if gini < best_gini:
-                    best_gini, best_feature, best_value = gini, f, v
-            e = time.time()
-        return best_feature, best_value, best_gini
 
+            # Sort the column and the result
+            lol = zip(column, y)
+
+            lol = np.array(sorted(lol, key=operator.itemgetter(0)))
+
+            sorted_column = lol[:, 0]
+            sorted_result = lol[:, 1]
+
+            # Calc first split-value distribution
+            c = dict(Counter(sorted_result))
+
+            dist = {}
+            for key, value in c.items():
+                temp_dist = {"lt": 0, "ht": value}
+                dist[key] = temp_dist
+
+            # print(dist)
+
+            for index in range(0, len(sorted_column)):
+
+                # Calc the distribution for each split-value
+                dist = self._calc_new_distribution(dist, index, sorted_column, sorted_result)
+
+                # Calc the gini for each distribution
+                gini = self._calc_gini_for_distribution(dist)
+
+                # print(gini)
+
+                if gini < best_gini:
+                    best_gini, best_feature, best_value = gini, f, sorted_column[index]
+                    # print(f)
+                    # print(sorted_column[index])
+            e = time.time()
+
+        # Calculate the correct split-value before returning
+        print("Best feature: " + str(best_feature) + "  " + "Best value: " + str(best_value))
+        return best_feature, best_value
+
+    def _calc_new_distribution(self, prev_dist, index, column, result):
+
+        # Won't work for the first iteration
+        print(prev_dist)
+
+        prev_result = result[index]
+
+        prev_dist[prev_result]['ht'] -= 1
+        prev_dist[prev_result]['lt'] += 1
+
+        print(prev_dist)
+
+        return prev_dist
+
+    def _calc_gini_for_distribution(self, dist):
+
+        ht_values = []
+        lt_values = []
+
+        for key, value in dist.items():
+            ht_values.append(value['ht'])
+            lt_values.append(value['lt'])
+
+        ht_gini = self._gini(ht_values)
+        lt_gini = self._gini(lt_values)
+
+        lt_probability = sum(lt_values) / (sum(lt_values) + sum(ht_values))
+        ht_probability = sum(ht_values) / (sum(lt_values) + sum(ht_values))
+
+        full_gini = lt_gini * lt_probability + ht_gini * ht_probability
+
+        return full_gini
+
+    """
     def _split_value_gini_calc_efficent(self, column, value, results, lt_freq={}):
-        """ returns the gini value column is split at value("value") """
         ht_freq = {}
 
         ht_column = []
         ht_result = []
+
+        # print(column)
+        # print(results)
+
+        # print(column)
+
+        lol = zip(column, results)
+
+        lol = np.array(sorted(lol, key=operator.itemgetter(0)))
+
+        # print(lol)
+
+        col = lol[:, 0]
+        res = lol[:, 1]
+
+        # print(lol)
+        # print(col)
+        # print(res)
+
+        index = self.find_gt(col, value)
+        # print("wtf")
+        # print(index)
+
+        ht_column = col[index:]
+        ht_result = res[index:]
+        lt_result = res[:index]
+
+        ht_c = Counter(ht_result)
+        lt_c = Counter(lt_result)
+
+        ht_values = list(ht_c.values())
+        # print("values")
+        # print(list(lt_c.values()))
+        # print(sum(list(lt_c.values())))
+        lt_freq = sum(list(lt_c.values()))
+        lt_values = list(lt_c.values())
+        ht_gini = self._gini(ht_values)
+        lt_gini = self._gini(lt_values)
+
+        lt_probability = sum(lt_values) / (sum(lt_values) + sum(ht_values))
+        ht_probability = sum(ht_values) / (sum(lt_values) + sum(ht_values))
+
+        full_gini = lt_gini * lt_probability + ht_gini * ht_probability
+        return full_gini, lt_freq, np.array(ht_column), np.array(ht_result)
+
+    def _split_value_gini_calc_efficent(self, column, value, results, lt_freq={}):
+        ht_freq = {}
+
+        ht_column = []
+        ht_result = []
+
         for i in range(len(results)):
+            # print("         " + str(i))
+            print("             " + str(column[i]))
             result = results[i]
             val = column[i]
             if val > value:
@@ -231,6 +353,7 @@ class DecisionTree:
 
         full_gini = lt_gini * lt_probability + ht_gini * ht_probability
         return full_gini, lt_freq, np.array(ht_column), np.array(ht_result)
+    """
 
     def _split(self, x, y, feature, value):
         col = x[:, feature]
@@ -270,3 +393,9 @@ class DecisionTree:
             return self._root.__str__()
 
         return self
+
+    def find_gt(self, a, x):
+        i = bisect.bisect_right(a, x)
+        if i != len(a):
+            return i
+        raise ValueError

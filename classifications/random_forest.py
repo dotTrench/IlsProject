@@ -42,6 +42,7 @@ class RandomForest:
 
             # print(i, self.n_estimators)
             tree.fit(subsets_x[i], subsets_y[i])
+            # tree.print_tree()
             self._decision_trees.append(tree)
 
     def predict(self, x):
@@ -68,10 +69,14 @@ class RandomForest:
     def _generate_subset(self, num_samples, x, y):
         subset_x = []
         subset_y = []
+
         for i in range(num_samples):
             r = randint(0, len(x) - 1)
             subset_x.append(x[r])
             subset_y.append(y[r])
+            if not self.bagging:
+                x = np.delete(x, r, 0)
+                y = np.delete(y, r, 0)
 
         return subset_x, subset_y
 
