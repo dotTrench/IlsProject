@@ -47,12 +47,12 @@ def run_test_on_dataset(dataset):
     features = dataset[list(attributes)]
     x = np.array(features.values)
     y = np.array(dataset[d_class].values)
-    dtc = DecisionTreeClassifier(max_features=len(x[0]), max_depth=18, min_samples_leaf=50)
-    dt = DecisionTree(max_features=len(x[0]), max_depth=18, min_samples_leaf=50)
+    dtc = DecisionTreeClassifier()
+    dt = DecisionTree()
     rfc = RandomForestClassifier(n_estimators=25, max_features=len(x[0]), max_depth=18)
     rf = RandomForest(n_estimators=25, max_features=len(x[0]), max_depth=18)
 
-    models = [('rfc', rfc), ('dtc', dtc), ('dt', dt), ('rf', rf)]
+    models = [('dt', dt)]
     print('Running tests')
     results = []
     for name, m in models:
@@ -94,11 +94,12 @@ def main():
     datasets = read_all_datasets()
     t.stop()
     print(t.get_milliseconds())
-    p = Pool()
-    results = p.map(run_test_on_dataset, datasets)
-    # results = run_test_on_dataset(datasets[1])
-    p.close()
-    p.join()
+    # p = Pool()
+    # results = p.map(run_test_on_dataset, datasets)
+    results = run_test_on_dataset(datasets[0])
+    print(results)
+    # p.close()
+    # p.join()
 
     pprint(results)
 

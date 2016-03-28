@@ -2,6 +2,7 @@ from collections import Counter
 import numpy as np
 import math
 import time
+from operator import itemgetter
 
 
 class Node:
@@ -109,9 +110,10 @@ class DecisionTree:
 
         if len(x) <= self.min_samples_leaf:
             return self._get_majority_node(y)
-
+        s = time.time()
         split_feature, split_value = self._get_best_split_point(x, y)
-
+        e = time.time()
+        print(e - s, depth)
         if split_feature is None:
             return self._get_majority_node(y)
 
@@ -186,11 +188,17 @@ class DecisionTree:
         best_value = None
         for f in features:
             column = x[:, f]
-            split_values = self._get_split_values(column)
+            lol = zip(column, y)
+            lol = np.array(sorted(lol, key=itemgetter(0)))
+
+            sorted_column = lol[:, 0]
+            sorted_results = lol[:, 1]
+
+            split_values = self._get_split_values(sorted_column)
 
             s = time.time()
             for v in split_values:
-                gini = self._split_value_gini_calc_efficent(column, v, y)
+                gini = self._split_value_gini_calc_efficent(sorted_column, v, sorted_results)
                 if gini < best_gini:
                     best_gini, best_feature, best_value = gini, f, v
             e = time.time()
@@ -219,6 +227,7 @@ class DecisionTree:
 
         ht_values = list(ht_freq.values())
         lt_values = list(lt_freq.values())
+
         ht_gini = self._gini(ht_values)
         lt_gini = self._gini(lt_values)
 
