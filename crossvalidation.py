@@ -55,7 +55,7 @@ def run_test_on_dataset(dataset):
     rfc = RandomForestClassifier(n_estimators=25, max_features=len(x[0]), max_depth=18)
     rf = RandomForest(n_estimators=25, max_features=len(x[0]), max_depth=18)
 
-    models = [('dtc', dtc)]
+    models = [('dt', dt)]
     print('Running tests')
     results = []
     for name, m in models:
@@ -98,13 +98,14 @@ def main():
     datasets = read_all_datasets()
     t.stop()
     print(t.get_milliseconds())
-    p = Pool()
-    results = p.map(run_test_on_dataset, datasets)
-    # results = run_test_on_dataset(datasets[0])
-    p.close()
-    p.join()
+    # p = Pool()
+    # results = p.map(run_test_on_dataset, datasets)
+    results = run_test_on_dataset(datasets[2])
+    print(results)
+    # p.close()
+    # p.join()
 
-    pprint(results)
+    # pprint(results)
 
 
 if __name__ == '__main__':

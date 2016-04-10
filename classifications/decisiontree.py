@@ -125,7 +125,6 @@ class DecisionTree:
         return n
 
     def _split_value_gini_calc(self, column, value, results):
-        """ returns the gini value column is split at value("value") """
         lt_freq = {}
         ht_freq = {}
         for val, result in zip(column, results):
@@ -178,6 +177,83 @@ class DecisionTree:
         values = np.unique(values)
         return (values[:-1] + values[1:]) / 2
 
+
+    def _get_best_split_point(self, x, y):
+        features = self._generate_features(x[0])
+        if self.max_features is not None and len(features) > self.max_features:
+            features = range(self.max_features)
+
+        best_gini = np.inf
+        best_feature = None
+        best_value = None
+        for f in features:
+            column = x[:, f]
+            sorted_list = np.array(sorted(zip(column, y), key=itemgetter(0)))
+
+            sorted_column = sorted_list[:, 0]
+            sorted_results = sorted_list[:, 1]
+
+            split_values = self._get_split_values(sorted_column)
+
+            # Calculate the first distribution
+            c = Counter(sorted_results)
+            dist = {}
+            for key, val in c.items():
+                temp_dist = {"lt": 0, "ht": val}
+                dist[key] = temp_dist
+
+            # print(dist)
+
+            counter = 0
+            for index in range(0, len(split_values)):
+                counter += 1
+
+                # Check if the next result is the same
+                if index != len(split_values):
+                    if sorted_results[index] != sorted_results[index + 1]:
+
+                        # Calculate the new distribution for the split-value
+                        dist = self._calc_new_distribution(dist, sorted_results[index], counter)
+
+                        # Calculate the gini for the new distribution
+                        # print(dist)
+                        gini = self._calc_gini_for_distribution(dist)
+
+                        # Reset the counter
+                        counter = 0
+
+                        # print("gini: " + str(gini))
+                        if gini < best_gini:
+                            best_gini, best_feature, best_value = gini, f, split_values[index]
+
+                    # else:
+                        # print("SKIPPED")
+
+        return best_feature, best_value
+
+    def _calc_new_distribution(self, prev_dist, new_result, counter):
+        prev_dist[new_result]['ht'] -= counter
+        prev_dist[new_result]['lt'] += counter
+        return prev_dist
+
+    def _calc_gini_for_distribution(self, dist):
+
+        lt_values = []
+        ht_values = []
+        for key, val in dist.items():
+            lt_values.append(val['lt'])
+            ht_values.append(val['ht'])
+
+        ht_gini = self._gini(ht_values)
+        lt_gini = self._gini(lt_values)
+
+        lt_probability = sum(lt_values) / (sum(lt_values) + sum(ht_values))
+        ht_probability = sum(ht_values) / (sum(lt_values) + sum(ht_values))
+
+        full_gini = lt_gini * lt_probability + ht_gini * ht_probability
+        return full_gini
+
+    """
     def _get_best_split_point(self, x, y):
         features = self._generate_features(x[0])
         if self.max_features is not None and len(features) > self.max_features:
@@ -205,7 +281,6 @@ class DecisionTree:
         return best_feature, best_value
 
     def _split_value_gini_calc_efficent(self, column, value, results):
-        """ returns the gini value column is split at value("value") """
         ht_freq = {}
         lt_freq = {}
         ht_column = []
@@ -236,6 +311,7 @@ class DecisionTree:
 
         full_gini = lt_gini * lt_probability + ht_gini * ht_probability
         return full_gini
+    """
 
     def _split(self, x, y, feature, value):
         col = x[:, feature]
