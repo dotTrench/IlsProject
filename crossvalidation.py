@@ -10,6 +10,7 @@ from collections import Counter
 import numpy as np
 import time
 from pprint import pprint
+from scipy.stats import wilcoxon
 
 
 class Timer:
@@ -55,24 +56,28 @@ def run_test_on_dataset(dataset):
     rfc = RandomForestClassifier(n_estimators=25, max_features=len(x[0]), max_depth=18)
     rf = RandomForest(n_estimators=25, max_features=len(x[0]), max_depth=18)
 
-    models = [('dtc', dtc)]
+    models = [(dtc, dt)]
     print('Running tests')
     results = []
-    for name, m in models:
-        print('Testing model: {0}'.format(name))
+    for m1, m2 in models:
+
+        # Model 1
+        name1 = str(type(m1))
+
+        # print('Testing model: {0}'.format(name))
         t = Timer()
         t.start()
-        print('recall', name)
-        recall = cross_validation.cross_val_score(m, x, y, cv=10,
+        print('recall', name1)
+        recall = cross_validation.cross_val_score(m1, x, y, cv=10,
                                                   scoring='recall_weighted')
         # auc = cross_validation.cross_val_score(m, x, y, cv=10,
         #                                        scoring='roc_auc')
 
-        print('accuracy', name)
-        accuracy = cross_validation.cross_val_score(m, x, y, cv=10,
+        print('accuracy', name1)
+        accuracy = cross_validation.cross_val_score(m1, x, y, cv=10,
                                                     scoring='accuracy')
-        print('precision', name)
-        prec = cross_validation.cross_val_score(m, x, y, cv=10,
+        print('precision', name1)
+        prec = cross_validation.cross_val_score(m1, x, y, cv=10,
                                                 scoring='precision_weighted')
         t.stop()
         result = {
@@ -81,12 +86,53 @@ def run_test_on_dataset(dataset):
             'accuracy': accuracy,
             'precision': prec,
             'time': t.get_milliseconds(),
-            'model': name,
+            'model': name1,
+            'dataset_name': filename
+        }
+
+        w1 = accuracy
+
+        print(result)
+        results.append(result)
+
+        # Model 2
+        name2 = str(type(m2))
+
+        print('model: {0} done in {1:.5f}ms'.format(name2, t.get_milliseconds()))
+
+        t = Timer()
+        t.start()
+        print('recall', name2)
+        recall = cross_validation.cross_val_score(m2, x, y, cv=10,
+                                                  scoring='recall_weighted')
+        # auc = cross_validation.cross_val_score(m, x, y, cv=10,
+        #                                        scoring='roc_auc')
+
+        print('accuracy', name2)
+        accuracy = cross_validation.cross_val_score(m2, x, y, cv=10,
+                                                    scoring='accuracy')
+        print('precision', name2)
+        prec = cross_validation.cross_val_score(m2, x, y, cv=10,
+                                                scoring='precision_weighted')
+        t.stop()
+        result = {
+            'recall': recall,
+            # 'auc': auc,
+            'accuracy': accuracy,
+            'precision': prec,
+            'time': t.get_milliseconds(),
+            'model': name2,
             'dataset_name': filename
         }
         print(result)
         results.append(result)
-        print('model: {0} done in {1:.5f}ms'.format(name, t.get_milliseconds()))
+        print('model: {0} done in {1:.5f}ms'.format(name2, t.get_milliseconds()))
+
+        w2 = accuracy
+
+        r = wilcoxon(w1, w2)
+
+        print(r)
 
     return results
 
@@ -99,8 +145,8 @@ def main():
     t.stop()
     print(t.get_milliseconds())
     p = Pool()
-    results = p.map(run_test_on_dataset, datasets)
-    # results = run_test_on_dataset(datasets[0])
+    # results = p.map(run_test_on_dataset, datasets)
+    results = run_test_on_dataset(datasets[1])
     p.close()
     p.join()
 
